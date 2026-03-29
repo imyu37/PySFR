@@ -395,18 +395,25 @@ class SFRCalculator:
             plt.show()
 
             # 获取采样间隔
-            del_param = float(input("输入采样间隔 (mm 或 dpi): "))
-            logger.info(f"用户输入采样间隔: {del_param}")
-            if del_param > 1:
-                del_param = 25.4 / del_param  # 将DPI转换为mm
+            del_input_raw = float(input("输入采样间隔 (mm 或 dpi): "))
+            logger.info(f"用户输入采样间隔: {del_input_raw}")
+            is_dpi = False
+            if del_input_raw > 1:
+                del_param = 25.4 / del_input_raw  # 将DPI转换为mm
+                is_dpi = True
                 logger.info(f"DPI转换为mm: {del_param}")
+            else:
+                del_param = del_input_raw
         else:  # 非GUI模式
             logger.info("进入非GUI模式")
             a = np.array(a, dtype=np.float64)
-            del_param = del_input
-            if del_param > 1:
-                del_param = 25.4 / del_param  # 将DPI转换为mm
+            is_dpi = False
+            if del_input > 1:
+                del_param = 25.4 / del_input  # 将DPI转换为mm
+                is_dpi = True
                 logger.info(f"DPI转换为mm: {del_param}")
+            else:
+                del_param = del_input
 
         # 图像尺寸
         nlin, npix = a.shape[0], a.shape[1]
@@ -645,21 +652,65 @@ class SFRCalculator:
         # 返回与MATLAB版本相同的输出
         status = 0
         logger.info("SFR计算完成")
-        return status, dat, e, sfr50, fitme, esf, self.nbin, del2
+        return status, dat, e, sfr50, fitme, esf, self.nbin, del2, is_dpi
 
 
 if __name__ == "__main__":
     logger.info("启动SFR计算程序")
     sfr = SFRCalculator()
-    status, dat, e, sfr50, fitme, esf, nbin, del2 = sfr.calculate_sfr()
+    status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr()
     if status == 0 and dat is not None:
         logger.info("绘制SFR结果图表")
-        plt.plot(dat[:, 0], dat[:, 1:])
-        plt.xlabel("频率")
+        # 定义通道颜色：R, G, B, Lum
+        colors = ["red", "green", "blue", "black"]
+        # 绘制各通道的SFR曲线，每个通道使用对应颜色
+        num_channels = dat.shape[1] - 1  # 减去频率列
+        for i in range(num_channels):
+            plt.plot(
+                dat[:, 0],
+                dat[:, i + 1],
+                color=colors[i % len(colors)],
+                label=f"通道{i}",
+            )
+        # 亮度通道（最后一列）使用散点绘制，黑色空心圆
+        plt.scatter(
+            dat[:, 0],
+            dat[:, -1],
+            s=40,
+            marker="o",
+            facecolors="none",
+            edgecolors="black",
+            label="Lum",
+        )
+        # 根据输入单位设置x轴标签
+        if is_dpi:
+            plt.xlabel("频率(cycle/pixel)")
+        else:
+            plt.xlabel("频率(cycle/mm)")
         plt.xlim(0, None)
         plt.ylim(0, 1)
         plt.ylabel("SFR")
         plt.title("空间频率响应")
+
+        # 在图像上添加采样效率数据
+        # e是一个1行ncol的数组，显示各通道的采样效率
+        channel_names = ["R", "G", "B", "Lum"]  # 假设有RGB和亮度通道
+        num_channels = e.shape[1]
+        text_str = "采样效率:\n"
+        for i in range(min(num_channels, len(channel_names))):
+            text_str += f"{channel_names[i]}: {e[0, i]:.1f}%\n"
+
+        # 在图表左上角添加文本框
+        plt.text(
+            0.98,
+            0.98,
+            text_str,
+            transform=plt.gca().transAxes,
+            horizontalalignment="right",
+            verticalalignment="top",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+        )
+
         plt.show()
         logger.info(f"采样效率: {e}")
         logger.info(f"SFR50: {sfr50}")
