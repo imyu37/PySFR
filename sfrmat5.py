@@ -712,6 +712,38 @@ if __name__ == "__main__":
         )
 
         plt.show()
+
+        # 提示用户保存数据到xlsx文件
+        save_choice = input("是否将绘图数据保存到Excel文件? (y/n): ").lower().strip()
+        if save_choice == 'y' or save_choice == 'yes':
+            try:
+                import pandas as pd
+
+                # 创建DataFrame
+                columns = ['频率']
+                channel_names = ['R', 'G', 'B', 'Lum']
+                for i in range(dat.shape[1] - 1):
+                    if i < len(channel_names):
+                        columns.append(channel_names[i])
+                    else:
+                        columns.append(f'通道{i}')
+                df = pd.DataFrame(dat, columns=columns)
+
+                # 保存到Excel文件
+                excel_filename = input("请输入Excel文件名 (例如: sfr_results.xlsx): ").strip()
+                if not excel_filename.endswith('.xlsx'):
+                    excel_filename += '.xlsx'
+                df.to_excel(excel_filename, index=False)
+                logger.info(f"数据已保存到 {excel_filename}")
+                print(f"数据已成功保存到 {excel_filename}")
+            except ImportError:
+                logger.error("未安装pandas库，无法保存Excel文件")
+                print("错误：需要安装pandas库才能保存Excel文件")
+                print("请运行: pip install pandas openpyxl")
+            except Exception as ex:
+                logger.error(f"保存Excel文件失败: {ex}")
+                print(f"保存失败: {ex}")
+
         logger.info(f"采样效率: {e}")
         logger.info(f"SFR50: {sfr50}")
         logger.info(f"合并因子: {nbin}")
