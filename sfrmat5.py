@@ -1,12 +1,10 @@
 import logging
-import os
 import tkinter as tk
 from tkinter import filedialog
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy
 from matplotlib.widgets import RectangleSelector
 from scipy import fft, signal
 from scipy.interpolate import interp1d
@@ -655,99 +653,116 @@ class SFRCalculator:
         return status, dat, e, sfr50, fitme, esf, self.nbin, del2, is_dpi
 
 
-if __name__ == "__main__":
-    logger.info("启动SFR计算程序")
-    sfr = SFRCalculator()
-    status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr()
-    if status == 0 and dat is not None:
-        logger.info("绘制SFR结果图表")
-        # 定义通道颜色：R, G, B, Lum
-        colors = ["red", "green", "blue", "black"]
-        # 绘制各通道的SFR曲线，每个通道使用对应颜色
-        num_channels = dat.shape[1] - 1  # 减去频率列
-        for i in range(num_channels):
-            plt.plot(
-                dat[:, 0],
-                dat[:, i + 1],
-                color=colors[i % len(colors)],
-                label=f"通道{i}",
-            )
-        # 亮度通道（最后一列）使用散点绘制，黑色空心圆
-        plt.scatter(
-            dat[:, 0],
-            dat[:, -1],
-            s=40,
-            marker="o",
-            facecolors="none",
-            edgecolors="black",
-            label="Lum",
-        )
-        # 根据输入单位设置x轴标签
-        if is_dpi:
-            plt.xlabel("频率(cycle/pixel)")
-        else:
-            plt.xlabel("频率(cycle/mm)")
-        plt.xlim(0, None)
-        plt.ylim(0, 1)
-        plt.ylabel("SFR")
-        plt.title("空间频率响应")
-
-        # 在图像上添加采样效率数据
-        # e是一个1行ncol的数组，显示各通道的采样效率
-        channel_names = ["R", "G", "B", "Lum"]  # 假设有RGB和亮度通道
-        num_channels = e.shape[1]
-        text_str = "采样效率:\n"
-        for i in range(min(num_channels, len(channel_names))):
-            text_str += f"{channel_names[i]}: {e[0, i]:.1f}%\n"
-
-        # 在图表左上角添加文本框
-        plt.text(
-            0.98,
-            0.98,
-            text_str,
-            transform=plt.gca().transAxes,
-            horizontalalignment="right",
-            verticalalignment="top",
-            bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
-        )
-
-        plt.show()
-
-        # 提示用户保存数据到xlsx文件
-        save_choice = input("是否将绘图数据保存到Excel文件? (y/n): ").lower().strip()
-        if save_choice == 'y' or save_choice == 'yes':
-            try:
-                import pandas as pd
-
-                # 创建DataFrame
-                columns = ['频率']
-                channel_names = ['R', 'G', 'B', 'Lum']
-                for i in range(dat.shape[1] - 1):
-                    if i < len(channel_names):
-                        columns.append(channel_names[i])
-                    else:
-                        columns.append(f'通道{i}')
-                df = pd.DataFrame(dat, columns=columns)
-
-                # 保存到Excel文件
-                excel_filename = input("请输入Excel文件名 (例如: sfr_results.xlsx): ").strip()
-                if not excel_filename.endswith('.xlsx'):
-                    excel_filename += '.xlsx'
-                df.to_excel(excel_filename, index=False)
-                logger.info(f"数据已保存到 {excel_filename}")
-                print(f"数据已成功保存到 {excel_filename}")
-            except ImportError:
-                logger.error("未安装pandas库，无法保存Excel文件")
-                print("错误：需要安装pandas库才能保存Excel文件")
-                print("请运行: pip install pandas openpyxl")
-            except Exception as ex:
-                logger.error(f"保存Excel文件失败: {ex}")
-                print(f"保存失败: {ex}")
-
-        logger.info(f"采样效率: {e}")
-        logger.info(f"SFR50: {sfr50}")
-        logger.info(f"合并因子: {nbin}")
-        logger.info(f"采样间隔: {del2}")
-        logger.info("程序执行完成")
+def main():
+    """主函数 - 支持命令行和GUI两种模式"""
+    import sys
+    
+    if len(sys.argv) > 1 and sys.argv[1] == "--gui":
+        # GUI模式
+        from sfrmat5_gui import SFRMatGUI
+        logger.info("启动GUI模式")
+        gui = SFRMatGUI()
+        gui.run()
     else:
-        logger.error(f"计算失败，状态码: {status}")
+        # 命令行模式
+        logger.info("启动SFR计算程序")
+        sfr = SFRCalculator()
+        status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr()
+        if status == 0 and dat is not None:
+            logger.info("绘制SFR结果图表")
+            # 定义通道颜色：R, G, B, Lum
+            colors = ["red", "green", "blue", "black"]
+            # 绘制各通道的SFR曲线，每个通道使用对应颜色
+            num_channels = dat.shape[1] - 1  # 减去频率列
+            for i in range(num_channels):
+                plt.plot(
+                    dat[:, 0],
+                    dat[:, i + 1],
+                    color=colors[i % len(colors)],
+                    label=f"通道{i}",
+                )
+            # 亮度通道（最后一列）使用散点绘制，黑色空心圆
+            plt.scatter(
+                dat[:, 0],
+                dat[:, -1],
+                s=40,
+                marker="o",
+                facecolors="none",
+                edgecolors="black",
+                label="Lum",
+            )
+            # 根据输入单位设置x轴标签
+            if is_dpi:
+                plt.xlabel("频率(cycle/pixel)")
+            else:
+                plt.xlabel("频率(cycle/mm)")
+            plt.xlim(0, None)
+            plt.ylim(0, 1)
+            plt.ylabel("SFR")
+            plt.title("空间频率响应")
+
+            # 在图像上添加采样效率数据
+            # e是一个1行ncol的数组，显示各通道的采样效率
+            channel_names = ["R", "G", "B", "Lum"]  # 假设有RGB和亮度通道
+            num_channels = e.shape[1]
+            text_str = "采样效率:\n"
+            for i in range(min(num_channels, len(channel_names))):
+                text_str += f"{channel_names[i]}: {e[0, i]:.1f}%\n"
+
+            # 在图表左上角添加文本框
+            plt.text(
+                0.98,
+                0.98,
+                text_str,
+                transform=plt.gca().transAxes,
+                horizontalalignment="right",
+                verticalalignment="top",
+                bbox=dict(boxstyle="round", facecolor="white", alpha=0.8),
+            )
+
+            plt.show()
+
+            # 提示用户保存数据到xlsx文件
+            save_choice = input("是否将绘图数据保存到Excel文件? (y/n): ").lower().strip()
+            if save_choice == "y" or save_choice == "yes":
+                try:
+                    import pandas as pd
+
+                    # 创建DataFrame
+                    columns = ["频率"]
+                    channel_names = ["R", "G", "B", "Lum"]
+                    for i in range(dat.shape[1] - 1):
+                        if i < len(channel_names):
+                            columns.append(channel_names[i])
+                        else:
+                            columns.append(f"通道{i}")
+                    df = pd.DataFrame(dat, columns=columns)
+
+                    # 保存到Excel文件
+                    excel_filename = input(
+                        "请输入Excel文件名 (例如: sfr_results.xlsx): "
+                    ).strip()
+                    if not excel_filename.endswith(".xlsx"):
+                        excel_filename += ".xlsx"
+                    df.to_excel(excel_filename, index=False)
+                    logger.info(f"数据已保存到 {excel_filename}")
+                    print(f"数据已成功保存到 {excel_filename}")
+                except ImportError:
+                    logger.error("未安装pandas库，无法保存Excel文件")
+                    print("错误：需要安装pandas库才能保存Excel文件")
+                    print("请运行: pip install pandas openpyxl")
+                except Exception as ex:
+                    logger.error(f"保存Excel文件失败: {ex}")
+                    print(f"保存失败: {ex}")
+
+            logger.info(f"采样效率: {e}")
+            logger.info(f"SFR50: {sfr50}")
+            logger.info(f"合并因子: {nbin}")
+            logger.info(f"采样间隔: {del2}")
+            logger.info("程序执行完成")
+        else:
+            logger.error(f"计算失败，状态码: {status}")
+
+
+if __name__ == "__main__":
+    main()

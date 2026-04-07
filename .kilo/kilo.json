@@ -1,0 +1,16 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "mcp": {
+    "github": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "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"
+      }
+    }
+  }
+}
