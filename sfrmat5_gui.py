@@ -235,12 +235,13 @@ class SFRMatGUI:
             [
                 sg.Button(
                     "计算SFR",
-                    size=(14, 2),
+                    size=(10, 1),
                     key="-CALCULATE_SFR-",
                     button_color=("white", "green"),
                 ),
-                sg.Button("显示图表", size=(14, 2), key="-SHOW_PLOTS-"),
-                sg.Button("导出结果", size=(14, 2), key="-EXPORT_RESULTS-"),
+                sg.Button("显示图表", size=(10, 1), key="-SHOW_PLOTS-"),
+                sg.Button("显示多图表", size=(10, 1), key="-SHOW_MULTI_PLOTS-"),
+                sg.Button("保存数据", size=(10, 1), key="-SAVE_DATA-"),
             ],
         ]
 
@@ -249,7 +250,7 @@ class SFRMatGUI:
             [sg.Text("分析结果", font=("Microsoft Sans Serif", 11, "bold"))],
             [
                 sg.Multiline(
-                    size=(80, 8),
+                    size=(80, 10),
                     key="-RESULTS_TEXT-",
                     disabled=True,
                     autoscroll=True,
@@ -645,52 +646,256 @@ class SFRMatGUI:
                 except Exception as e:
                     self.sg.popup_error(f"无法显示图表: {str(e)}")
 
-            elif event == "-EXPORT_RESULTS-":
+            elif event == "-SHOW_MULTI_PLOTS-":
                 if self.results is None:
-                    self.sg.popup_error("无结果可导出")
+                    self.sg.popup_error("暂无结果可用。请先运行分析。")
                     continue
 
-                # 导出结果到Excel文件
+                try:
+                    status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = self.results
+
+                    if status == 0 and dat is not None:
+                        # 创建2行2列的图表布局
+                        fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+                        fig.suptitle("SFR分析结果", fontsize=14)
+
+                        # 1. 绘制ESF（边扩散函数）- 左上
+                        if esf is not None and len(esf) > 0:
+                            # 如果有多个通道，显示第一个通道的ESF
+                            if len(esf.shape) > 1:
+                                esf_plot = esf[:, 0]  # 使用第一个通道
+                            else:
+                                esf_plot = esf
+
+                            x_esf = np.arange(len(esf_plot))
+                            axes[0, 0].plot(x_esf, esf_plot, "b-", linewidth=2)
+                            axes[0, 0].set_xlabel("像素位置")
+                            axes[0, 0].set_ylabel("强度")
+                            axes[0, 0].set_title("边扩散函数 (ESF)")
+                            axes[0, 0].grid(True)
+                        else:
+                            axes[0, 0].text(
+                                0.5,
+                                0.5,
+                                "无ESF数据",
+                                ha="center",
+                                va="center",
+                                transform=axes[0, 0].transAxes,
+                            )
+                            axes[0, 0].set_title("边扩散函数 (ESF)")
+
+                        # 2. 绘制LSF（线扩散函数）- 右上
+                        if esf is not None and len(esf) > 0:
+                            # 计算LSF（ESF的导数）
+                            if len(esf.shape) > 1:
+                                esf_for_lsf = esf[:, 0]  # 使用第一个通道
+                            else:
+                                esf_for_lsf = esf
+
+                            # 计算导数作为LSF
+                            lsf = np.gradient(esf_for_lsf)
+                            x_lsf = np.arange(len(lsf))
+                            axes[0, 1].plot(x_lsf, lsf, "r-", linewidth=2)
+                            axes[0, 1].set_xlabel("像素位置")
+                            axes[0, 1].set_ylabel("导数")
+                            axes[0, 1].set_title("线扩散函数 (LSF)")
+                            axes[0, 1].grid(True)
+                        else:
+                            axes[0, 1].text(
+                                0.5,
+                                0.5,
+                                "无LSF数据",
+                                ha="center",
+                                va="center",
+                                transform=axes[0, 1].transAxes,
+                            )
+                            axes[0, 1].set_title("线扩散函数 (LSF)")
+
+                        # 3. 绘制SFR（空间频率响应）- 左下
+                        colors = ["red", "green", "blue", "black"]
+                        num_channels = dat.shape[1] - 1
+
+                        for i in range(num_channels):
+                            axes[1, 0].plot(
+                                dat[:, 0],
+                                dat[:, i + 1],
+                                color=colors[i % len(colors)],
+                                label=f"通道{i}",
+                            )
+
+                        # 亮度通道使用散点绘制
+                        axes[1, 0].scatter(
+                            dat[:, 0],
+                            dat[:, -1],
+                            s=40,
+                            marker="o",
+                            facecolors="none",
+                            edgecolors="black",
+                            label="Lum",
+                        )
+
+                        # 设置x轴标签
+                        if is_dpi:
+                            axes[1, 0].set_xlabel("频率(cycles/pixel)")
+                        else:
+                            axes[1, 0].set_xlabel("频率(cycles/mm)")
+
+                        axes[1, 0].set_xlim(0, None)
+                        axes[1, 0].set_ylim(0, 1)
+                        axes[1, 0].set_ylabel("SFR")
+                        axes[1, 0].set_title("空间频率响应")
+
+                        # 添加采样效率数据
+                        if e is not None and e.shape[1] > 0:
+                            channel_names = ["R", "G", "B", "Lum"]
+                            text_str = "采样效率:\n"
+                            for i in range(min(e.shape[1], len(channel_names))):
+                                text_str += f"{channel_names[i]}: {e[0, i]:.1f}%\n"
+
+                            axes[1, 0].text(
+                                0.98,
+                                0.98,
+                                text_str,
+                                transform=axes[1, 0].transAxes,
+                                horizontalalignment="right",
+                                verticalalignment="top",
+                                bbox=dict(
+                                    boxstyle="round", facecolor="white", alpha=0.8
+                                ),
+                            )
+
+                        axes[1, 0].legend()
+                        axes[1, 0].grid(True)
+
+                        # 4. 显示ROI图像 - 右下
+                        if self.calculator.image is not None:
+                            # 归一化图像数据到[0, 1]范围用于显示
+                            display_image = self.calculator.image.copy()
+                            if len(display_image.shape) == 3:
+                                # RGB图像
+                                if display_image.max() > 1:
+                                    display_image = display_image / 255.0
+                                axes[1, 1].imshow(display_image)
+                            else:
+                                # 灰度图像
+                                if display_image.max() > 1:
+                                    display_image = display_image / 255.0
+                                axes[1, 1].imshow(display_image, cmap="gray")
+
+                            axes[1, 1].set_title("ROI图像")
+                            axes[1, 1].axis("off")
+                        else:
+                            axes[1, 1].text(
+                                0.5,
+                                0.5,
+                                "无图像数据",
+                                ha="center",
+                                va="center",
+                                transform=axes[1, 1].transAxes,
+                            )
+                            axes[1, 1].set_title("ROI图像")
+
+                        plt.tight_layout()
+                        plt.show()
+
+                        window["-STATUSBAR-"].update("多图表已显示")
+                    else:
+                        self.sg.popup_error("无有效结果可显示")
+
+                except Exception as e:
+                    self.sg.popup_error(f"无法显示多图表: {str(e)}")
+
+            elif event == "-SAVE_DATA-":
+                if self.results is None:
+                    self.sg.popup_error("无数据可保存")
+                    continue
+
+                # 保存数据到Excel文件
                 try:
                     import pandas as pd
 
                     status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = self.results
 
                     if status == 0 and dat is not None:
-                        # 创建DataFrame
-                        columns = ["频率"]
-                        channel_names = ["R", "G", "B", "Lum"]
-                        for i in range(dat.shape[1] - 1):
-                            if i < len(channel_names):
-                                columns.append(channel_names[i])
-                            else:
-                                columns.append(f"通道{i}")
-
-                        df = pd.DataFrame(dat, columns=columns)
-
-                        # 保存到Excel文件
-                        export_path = self.sg.popup_get_file(
-                            "保存结果",
+                        # 获取保存路径
+                        save_path = self.sg.popup_get_file(
+                            "保存数据",
                             save_as=True,
                             default_extension=".xlsx",
-                            file_types=(("Excel文件", "*.xlsx"),),
+                            file_types=(
+                                ("Excel文件", "*.xlsx"),
+                                ("所有文件", "*.*"),
+                            ),
                         )
 
-                        if export_path:
-                            if not export_path.endswith(".xlsx"):
-                                export_path += ".xlsx"
+                        if save_path:
+                            if not save_path.endswith(".xlsx"):
+                                save_path += ".xlsx"
 
-                            df.to_excel(export_path, index=False)
-                            self.sg.popup("成功", f"结果已导出到 {export_path}")
-                            window["-STATUSBAR-"].update("结果已导出")
+                            # 创建DataFrame用于保存SFR数据
+                            columns = ["频率"]
+                            channel_names = ["R", "G", "B", "Lum"]
+                            for i in range(dat.shape[1] - 1):
+                                if i < len(channel_names):
+                                    columns.append(channel_names[i])
+                                else:
+                                    columns.append(f"通道{i}")
+
+                            sfr_df = pd.DataFrame(dat, columns=columns)
+
+                            # 创建Excel写入器
+                            with pd.ExcelWriter(save_path, engine="openpyxl") as writer:
+                                # 创建基本信息工作表 - 第一个工作表
+                                info_data = {
+                                    "参数": [
+                                        "状态",
+                                        "合并因子",
+                                        "采样间隔",
+                                        "频率单位",
+                                        "SFR50",
+                                    ],
+                                    "值": [
+                                        "成功" if status == 0 else "失败",
+                                        nbin,
+                                        f"{del2:.4f}",
+                                        "cycles/pixel" if is_dpi else "cycles/mm",
+                                        f"{sfr50:.4f}",
+                                    ],
+                                }
+                                info_df = pd.DataFrame(info_data)
+                                info_df.to_excel(
+                                    writer, sheet_name="基本信息", index=False
+                                )
+
+                                # 写入SFR数据到第二个工作表
+                                sfr_df.to_excel(
+                                    writer, sheet_name="SFR数据", index=False
+                                )
+
+                                # 创建采样效率工作表 - 第三个工作表
+                                if e is not None and e.shape[1] > 0:
+                                    efficiency_data = {"通道": [], "采样效率(%)": []}
+                                    for i in range(min(e.shape[1], len(channel_names))):
+                                        efficiency_data["通道"].append(channel_names[i])
+                                        efficiency_data["采样效率(%)"].append(
+                                            f"{e[0, i]:.1f}"
+                                        )
+
+                                    efficiency_df = pd.DataFrame(efficiency_data)
+                                    efficiency_df.to_excel(
+                                        writer, sheet_name="采样效率", index=False
+                                    )
+
+                            self.sg.popup("成功", f"数据已保存到 {save_path}")
+                            window["-STATUSBAR-"].update("数据已保存")
                     else:
-                        self.sg.popup_error("无有效结果可导出")
+                        self.sg.popup_error("无有效数据可保存")
 
                 except ImportError:
-                    self.sg.popup_error("未安装pandas库，无法导出Excel文件")
+                    self.sg.popup_error("未安装pandas库，无法保存Excel文件")
                     print("请运行: pip install pandas openpyxl")
                 except Exception as e:
-                    self.sg.popup_error(f"导出失败: {str(e)}")
+                    self.sg.popup_error(f"保存数据失败: {str(e)}")
 
         # 关闭窗口
         window.close()
