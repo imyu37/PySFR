@@ -6,6 +6,7 @@ SFRMAT5 GUI界面
 import io
 import logging
 import os
+import platform
 import tkinter as tk
 from tkinter import filedialog
 
@@ -15,12 +16,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.widgets import RectangleSelector
 from PIL import Image
-from scipy import fft, signal
 
 from sfrmat5 import SFRCalculator
 
-# 配置matplotlib中文显示
-plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "DejaVu Sans"]
+if platform.system() == "Windows":
+    plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "Arial"]
+else:
+    plt.rcParams["font.sans-serif"] = ["DejaVu Sans", "Arial"]
 plt.rcParams["axes.unicode_minus"] = False
 
 # 配置日志
@@ -44,7 +46,7 @@ class ROITool:
 
     def select_roi(self):
         """显示ROI选择界面并返回ROI坐标"""
-        fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+        fig, ax = plt.subplots(1, 1, figsize=(7, 5))
 
         # 归一化图像数据到[0, 1]范围以避免警告
         display_image = self.image.copy()
@@ -141,7 +143,7 @@ class SFRMatGUI:
             [
                 sg.Text(
                     "SFRMAT5 - 空间频率响应分析",
-                    font=("微软雅黑", 16, "bold"),
+                    font=("Microsoft Sans Serif", 16, "bold"),
                     justification="center",
                     expand_x=True,
                 )
@@ -150,7 +152,7 @@ class SFRMatGUI:
 
         # 图像控制区域
         image_control_layout = [
-            [sg.Text("图像选择", font=("微软雅黑", 11, "bold"))],
+            [sg.Text("图像选择", font=("Microsoft Sans Serif", 11, "bold"))],
             [
                 sg.Button("加载图像", size=(12, 1), key="-LOAD_IMAGE-"),
                 sg.Button("选择ROI", size=(12, 1), key="-CHOOSE_ROI-"),
@@ -161,7 +163,7 @@ class SFRMatGUI:
 
         # 参数设置区域
         params_layout = [
-            [sg.Text("分析参数", font=("微软雅黑", 11, "bold"))],
+            [sg.Text("分析参数", font=("Microsoft Sans Serif", 11, "bold"))],
             [
                 sg.Frame(
                     "",
@@ -218,7 +220,7 @@ class SFRMatGUI:
 
         # 图像预览区域
         preview_layout = [
-            [sg.Text("图像预览", font=("微软雅黑", 11, "bold"))],
+            [sg.Text("图像预览", font=("Microsoft Sans Serif", 11, "bold"))],
             [
                 sg.Image(
                     key="-IMAGE_PREVIEW-", size=(400, 420), background_color="lightgray"
@@ -229,7 +231,7 @@ class SFRMatGUI:
 
         # 分析控制区域
         analysis_layout = [
-            [sg.Text("分析控制", font=("微软雅黑", 11, "bold"))],
+            [sg.Text("分析控制", font=("Microsoft Sans Serif", 11, "bold"))],
             [
                 sg.Button(
                     "计算SFR",
@@ -244,14 +246,14 @@ class SFRMatGUI:
 
         # 结果区域
         results_layout = [
-            [sg.Text("分析结果", font=("微软雅黑", 11, "bold"))],
+            [sg.Text("分析结果", font=("Microsoft Sans Serif", 11, "bold"))],
             [
                 sg.Multiline(
                     size=(80, 8),
                     key="-RESULTS_TEXT-",
                     disabled=True,
                     autoscroll=True,
-                    font=("Courier", 9),
+                    font=("Microsoft Sans Serif", 9),
                 )
             ],
         ]
@@ -493,7 +495,7 @@ class SFRMatGUI:
 - 状态: {"成功" if status == 0 else "失败"}
 - 合并因子: {nbin}
 - 采样间隔: {del2:.4f}
-- 频率单位: {"cycle/mm" if is_dpi else "cycle/pixel"}
+- 频率单位: {"cycles/pixel" if is_dpi else "cycles/mm"}
 
 关键指标:
 - SFR50: {sfr50:.4f}
@@ -514,7 +516,7 @@ class SFRMatGUI:
         """启动GUI事件循环"""
         # 创建窗口
         layout = self.create_layout()
-        window = sg.Window("SFRMAT5", layout, size=(850, 600), resizable=True)
+        window = sg.Window("SFRMAT5", layout, size=(850, 600), resizable=False)
 
         # 事件循环
         while True:
@@ -580,7 +582,7 @@ class SFRMatGUI:
                         colors = ["red", "green", "blue", "black"]
                         num_channels = dat.shape[1] - 1
 
-                        plt.figure(figsize=(10, 6))
+                        plt.figure(figsize=(7, 5))
 
                         for i in range(num_channels):
                             plt.plot(
@@ -603,9 +605,9 @@ class SFRMatGUI:
 
                         # 设置x轴标签
                         if is_dpi:
-                            plt.xlabel("频率(cycle/mm)")
+                            plt.xlabel("频率(cycles/pixel)")
                         else:
-                            plt.xlabel("频率(cycle/pixel)")
+                            plt.xlabel("频率(cycles/mm)")
 
                         plt.xlim(0, None)
                         plt.ylim(0, 1)

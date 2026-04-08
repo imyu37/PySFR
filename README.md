@@ -2,6 +2,14 @@
 
 基于 MATLAB 的 `sfrmat5.m` 移植的 Python 实现，用于计算图像系统的空间频率响应（SFR）。
 
+## 更新日志
+
+### v1.0.0 (2024)
+- 初始 Python 版本发布
+- 基于 sfrmat5.m 的完整功能移植
+- 添加 GUI 界面支持
+- 改进的错误处理和日志记录
+
 ## 项目概述
 
 `py_sfrmat` 是一个用于图像质量评估的 Python 工具，实现了 ISO 12233 标准中定义的空间频率响应（SFR）测量方法。该工具可以分析相机、镜头和其他成像系统的调制传递函数（MTF）。
@@ -196,11 +204,3 @@ minalpha = 0.5
 1. ISO 12233:2023 - Photography - Electronic still picture imaging - Resolution and spatial frequency responses
 2. Burns, P.D., "Slanted-Edge MTF for Digital Camera and Scanner Analysis", IS&T's 2000 PICS Conference
 3. sfrmat5.m MATLAB 实现文档
-
-## 更新日志
-
-### v1.0.0 (2024)
-- 初始 Python 版本发布
-- 基于 sfrmat5.m 的完整功能移植
-- 添加 GUI 界面支持
-- 改进的错误处理和日志记录
