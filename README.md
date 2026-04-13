@@ -1,14 +1,31 @@
 # py_sfrmat - Python 空间频率响应分析工具
 
-基于 MATLAB 的 `sfrmat5.m` 移植的 Python 实现，用于计算图像系统的空间频率响应（SFR）。
+基于 MATLAB 的 `sfrmat5.m` 移植的 Python 实现，用于计算图像系统的空间频率响应（SFR）。支持命令行和 GUI 两种操作模式。
+
+## 项目结构
+
+```
+py_sfrmat/
+├── sfrmat5.py          # 核心 SFR 计算类
+├── sfrmat5_gui.py      # FreeSimpleGUI 界面
+├── images/             # 测试图像目录
+│   ├── ISO 12233-2023 chart.jpg
+│   ├── Plan N 10x-1.bmp
+│   ├── Test_edge1.tif
+│   └── Test_edge1_mono.tif
+├── sfrmat5.log         # 命令行模式日志
+├── sfrmat5_gui.log     # GUI 模式日志
+└── README.md          # 项目文档
+```
 
 ## 更新日志
 
 ### v1.0.0 (2024)
 - 初始 Python 版本发布
 - 基于 sfrmat5.m 的完整功能移植
-- 添加 GUI 界面支持
+- 添加 FreeSimpleGUI 界面支持
 - 改进的错误处理和日志记录
+- 支持 Excel 数据导出
 
 ## 项目概述
 
@@ -20,8 +37,11 @@
 - **边缘检测**：自动检测和拟合图像中的边缘
 - **超采样技术**：使用 4 倍超采样提高测量精度
 - **窗口函数**：支持 Tukey 窗和汉明窗
-- **GUI 界面**：提供图形界面用于图像选择和 ROI 选择
+- **双模式界面**：提供 FreeSimpleGUI 界面和命令行界面
+- **ROI 选择工具**：交互式 ROI 区域选择
+- **数据导出**：支持 Excel 格式数据导出
 - **详细日志**：完整的日志记录和错误处理
+- **跨平台支持**：Windows/Linux/macOS 兼容
 
 ## 安装要求
 
@@ -30,41 +50,76 @@
 
 ### 依赖包
 ```bash
-pip install numpy scipy matplotlib opencv-python tkinter
+# 基础依赖
+pip install numpy scipy matplotlib opencv-python
+
+# GUI 界面依赖
+pip install FreeSimpleGUI Pillow
+
+# 可选：Excel 导出功能
+pip install pandas openpyxl
 ```
 
 ### 主要依赖说明
 - `numpy`: 数值计算和数组操作
 - `scipy`: 科学计算（FFT、信号处理）
-- `matplotlib`: 数据可视化和 GUI 界面
+- `matplotlib`: 数据可视化和图表绘制
 - `opencv-python`: 图像读取和处理
-- `tkinter`: 图形用户界面（Python 标准库）
+- `FreeSimpleGUI`: 图形用户界面（替代 tkinter）
+- `PIL` (Pillow): 图像处理支持
+- `pandas`: Excel 数据导出（可选）
+- `openpyxl`: Excel 文件支持（可选）
 
 ## 使用方法
 
-### 基本使用
+### 1. GUI 模式（推荐）
 
-```python
-from sfrmat5 import SFRCalculator
-
-# 创建 SFR 计算器实例
-sfr = SFRCalculator()
-
-# 运行 SFR 分析（GUI 模式）
-status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr()
+```bash
+# 启动 GUI 界面
+python sfrmat5.py --gui
 ```
 
-### 程序化使用（非 GUI 模式）
+或者直接运行 GUI 文件：
+
+```bash
+python sfrmat5_gui.py
+```
+
+GUI 界面提供以下功能：
+- 图像文件选择
+- ROI 区域选择
+- 参数配置界面
+- 实时结果显示
+- 数据导出功能
+
+### 2. 命令行模式
+
+```bash
+# 基本命令行模式（交互式）
+python sfrmat5.py
+```
+
+命令行模式会依次提示：
+- 选择图像文件
+- 选择 ROI 区域
+- 输入采样间隔
+- 显示分析结果
+- 可选保存到 Excel
+
+### 3. 程序化使用（API 调用）
 
 ```python
 import numpy as np
 from sfrmat5 import SFRCalculator
 
-# 加载图像数据
-image_data = np.array(...)  # 你的图像数据
-
-# 运行 SFR 分析
+# 创建 SFR 计算器实例
 sfr = SFRCalculator()
+
+# 方法1：GUI 模式（自动文件选择和 ROI 选择）
+status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr()
+
+# 方法2：非 GUI 模式（直接传入数据）
+image_data = np.array(...)  # 你的图像数据
 status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr(
     io=1,                    # 非 GUI 模式
     del_input=0.01,          # 采样间隔（mm）
@@ -72,12 +127,6 @@ status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr(
     npol=5,                  # 多项式拟合阶数
     wflag=0                  # 窗口函数选择（0=Tukey, 1=Hamming）
 )
-```
-
-### 命令行运行
-
-```bash
-python sfrmat5.py
 ```
 
 ## 输出结果说明
@@ -162,12 +211,16 @@ minalpha = 0.5
 - 核心算法实现
 - 输入输出格式
 - 参数设置和默认值
+- 边缘检测和拟合方法
+- SFR 计算流程
 
 ### 不同点
-- Python 面向对象实现
-- 改进的错误处理
-- 更详细的日志记录
-- 现代化的 GUI 界面
+- Python 面向对象实现（SFRCalculator 类）
+- 改进的错误处理和日志记录
+- 双模式界面（FreeSimpleGUI + 命令行）
+- 支持 Excel 数据导出
+- 跨平台兼容性
+- 独立的 ROI 选择工具类
 
 ## 应用场景
 
@@ -196,8 +249,8 @@ minalpha = 0.5
 ## 作者和贡献
 
 - **原始 MATLAB 版本**: Peter Burns
-- **Python 移植**: [您的姓名]
-- **项目维护**: [您的联系信息]
+- **Python 移植**: imyu37
+- **项目维护**: wanyong_37@hotmail.com
 
 ## 参考文献
 
