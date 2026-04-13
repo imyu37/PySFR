@@ -656,7 +656,7 @@ class SFRMatGUI:
 
                     if status == 0 and dat is not None:
                         # 创建2行2列的图表布局
-                        fig, axes = plt.subplots(2, 2, figsize=(12, 8))
+                        fig, axes = plt.subplots(2, 2, figsize=(8.5, 5.5))
                         fig.suptitle("SFR分析结果", fontsize=14)
 
                         # 1. 绘制ESF（边扩散函数）- 左上
@@ -669,9 +669,11 @@ class SFRMatGUI:
 
                             x_esf = np.arange(len(esf_plot))
                             axes[0, 0].plot(x_esf, esf_plot, "b-", linewidth=2)
-                            axes[0, 0].set_xlabel("像素位置")
-                            axes[0, 0].set_ylabel("强度")
-                            axes[0, 0].set_title("边扩散函数 (ESF)")
+                            axes[0, 0].set_xlabel("像素位置", fontsize=10)
+                            axes[0, 0].set_ylabel("强度", fontsize=10)
+                            axes[0, 0].set_title("边扩散函数 (ESF)", fontsize=12)
+                            axes[0, 0].set_xlim(0, None)
+                            axes[0, 0].set_ylim(0, None)
                             axes[0, 0].grid(True)
                         else:
                             axes[0, 0].text(
@@ -682,7 +684,7 @@ class SFRMatGUI:
                                 va="center",
                                 transform=axes[0, 0].transAxes,
                             )
-                            axes[0, 0].set_title("边扩散函数 (ESF)")
+                            axes[0, 0].set_title("边扩散函数 (ESF)", fontsize=12)
 
                         # 2. 绘制LSF（线扩散函数）- 右上
                         if esf is not None and len(esf) > 0:
@@ -696,9 +698,10 @@ class SFRMatGUI:
                             lsf = np.gradient(esf_for_lsf)
                             x_lsf = np.arange(len(lsf))
                             axes[0, 1].plot(x_lsf, lsf, "r-", linewidth=2)
-                            axes[0, 1].set_xlabel("像素位置")
-                            axes[0, 1].set_ylabel("导数")
-                            axes[0, 1].set_title("线扩散函数 (LSF)")
+                            axes[0, 1].set_xlabel("像素位置", fontsize=10)
+                            axes[0, 1].set_ylabel("导数", fontsize=10)
+                            axes[0, 1].set_title("线扩散函数 (LSF)", fontsize=12)
+                            axes[0, 1].set_xlim(0, None)
                             axes[0, 1].grid(True)
                         else:
                             axes[0, 1].text(
@@ -709,7 +712,7 @@ class SFRMatGUI:
                                 va="center",
                                 transform=axes[0, 1].transAxes,
                             )
-                            axes[0, 1].set_title("线扩散函数 (LSF)")
+                            axes[0, 1].set_title("线扩散函数 (LSF)", fontsize=12)
 
                         # 3. 绘制SFR（空间频率响应）- 左下
                         colors = ["red", "green", "blue", "black"]
@@ -736,14 +739,14 @@ class SFRMatGUI:
 
                         # 设置x轴标签
                         if is_dpi:
-                            axes[1, 0].set_xlabel("频率(cycles/pixel)")
+                            axes[1, 0].set_xlabel("频率(cycles/pixel)", fontsize=10)
                         else:
-                            axes[1, 0].set_xlabel("频率(cycles/mm)")
+                            axes[1, 0].set_xlabel("频率(cycles/mm)", fontsize=10)
 
                         axes[1, 0].set_xlim(0, None)
                         axes[1, 0].set_ylim(0, 1)
-                        axes[1, 0].set_ylabel("SFR")
-                        axes[1, 0].set_title("空间频率响应")
+                        axes[1, 0].set_ylabel("SFR", fontsize=10)
+                        axes[1, 0].set_title("空间频率响应", fontsize=12)
 
                         # 添加采样效率数据
                         if e is not None and e.shape[1] > 0:
@@ -782,7 +785,7 @@ class SFRMatGUI:
                                     display_image = display_image / 255.0
                                 axes[1, 1].imshow(display_image, cmap="gray")
 
-                            axes[1, 1].set_title("ROI图像")
+                            axes[1, 1].set_title("ROI图像", fontsize=12)
                             axes[1, 1].axis("off")
                         else:
                             axes[1, 1].text(
@@ -793,7 +796,7 @@ class SFRMatGUI:
                                 va="center",
                                 transform=axes[1, 1].transAxes,
                             )
-                            axes[1, 1].set_title("ROI图像")
+                            axes[1, 1].set_title("ROI图像", fontsize=12)
 
                         plt.tight_layout()
                         plt.show()
@@ -854,7 +857,7 @@ class SFRMatGUI:
                                         "频率单位",
                                         "SFR50",
                                     ],
-                                    "值": [
+                                    "数值": [
                                         "成功" if status == 0 else "失败",
                                         nbin,
                                         f"{del2:.4f}",
