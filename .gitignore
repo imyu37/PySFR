@@ -2,10 +2,13 @@
 .kilo/
 .codebuddy/
 __pycache__/
+.pytest_cache/
 
 # 根目录下文件
-sfrmat5.log
-sfrmat5_gui.log
+*.log
 *.pyc
+*.pyo
+*.pyd
+*.pyi
 *.m
 
