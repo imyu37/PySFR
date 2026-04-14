@@ -1,6 +1,11 @@
-*.m
-sfrmat5/
-Example_Images/
+# 文件夹及文件
+.kilo/
+.codebuddy/
+__pycache__/
+
+# 根目录下文件
 sfrmat5.log
 sfrmat5_gui.log
 *.pyc
+*.m
+
