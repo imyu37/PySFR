@@ -13,14 +13,12 @@ py_sfrmat/
 │   ├── Plan N 10x-1.bmp
 │   ├── Test_edge1.tif
 │   └── Test_edge1_mono.tif
-├── sfrmat5.log         # 命令行模式日志
-├── sfrmat5_gui.log     # GUI 模式日志
 └── README.md          # 项目文档
 ```
 
 ## 更新日志
 
-### v1.0.0 (2024)
+### v1.0.1 (2026.4.14)
 - 初始 Python 版本发布
 - 基于 sfrmat5.m 的完整功能移植
 - 添加 FreeSimpleGUI 界面支持
