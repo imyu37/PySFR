@@ -7,8 +7,6 @@ import io
 import logging
 import os
 import platform
-import tkinter as tk
-from tkinter import filedialog
 
 import cv2
 import FreeSimpleGUI as sg
@@ -288,18 +286,14 @@ class SFRMatGUI:
         """加载图像文件"""
         logger.info("打开文件对话框选择图像")
 
-        # 使用tkinter文件对话框
-        root = tk.Tk()
-        root.withdraw()  # 隐藏主窗口
-
-        file_path = filedialog.askopenfilename(
-            title="选择图像文件",
-            filetypes=(
+        # 使用FreeSimpleGUI文件对话框
+        file_path = self.sg.popup_get_file(
+            "选择图像文件",
+            file_types=(
                 ("图像文件", "*.png *.jpg *.jpeg *.tiff *.tif *.bmp *.gif"),
                 ("所有文件", "*.*"),
             ),
         )
-        root.destroy()
 
         if file_path:
             try:

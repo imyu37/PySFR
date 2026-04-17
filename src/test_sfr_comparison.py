@@ -5,12 +5,13 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-# 添加当前目录到Python路径
+# 添加当前目录和上一级目录到Python路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # 导入两个模块
 import slantedgeMTF
-from sfrmat5_updated import SFRCalculator
+from sfrmat5 import SFRCalculator
 
 # 测试图像路径
 IMAGE_PATH = "images/Test_edge1.tif"
@@ -25,7 +26,7 @@ def read_image(path):
     return img
 
 
-# 使用sfrmat5_updated计算ESF、LSF和SFR
+# 使用sfrmat5计算ESF、LSF和SFR
 def compute_esf_sfrmat5(img):
     calculator = SFRCalculator()
     # 使用非GUI模式，io=1
@@ -123,7 +124,7 @@ def main():
     img = read_image(IMAGE_PATH)
     print(f"图像尺寸: {img.shape}")
 
-    print("\n使用sfrmat5_updated计算ESF、LSF和SFR...")
+    print("\n使用sfrmat5计算ESF、LSF和SFR...")
     pos1, esf1, lsf1, sfr1 = compute_esf_sfrmat5(img)
     if pos1 is None:
         return
@@ -137,7 +138,7 @@ def main():
 
     # 绘制两个ESF
     plt.subplot(3, 1, 1)
-    plt.plot(pos1, esf1, "b-", label="sfrmat5_updated")
+    plt.plot(pos1, esf1, "b-", label="sfrmat5")
     plt.plot(pos2, esf2, "r-", label="slantedgeMTF")
     plt.title("ESF Comparison")
     plt.xlabel("Position (pixels)")
@@ -147,7 +148,7 @@ def main():
 
     # 绘制两个LSF
     plt.subplot(3, 1, 2)
-    plt.plot(pos1, lsf1, "b-", label="sfrmat5_updated")
+    plt.plot(pos1, lsf1, "b-", label="sfrmat5")
     plt.plot(pos2, lsf2, "r-", label="slantedgeMTF")
     plt.title("LSF Comparison")
     plt.xlabel("Position (pixels)")
@@ -157,7 +158,7 @@ def main():
 
     # 绘制两个SFR
     plt.subplot(3, 1, 3)
-    plt.plot(sfr1[0], sfr1[1], "b-", label="sfrmat5_updated")
+    plt.plot(sfr1[0], sfr1[1], "b-", label="sfrmat5")
     plt.plot(sfr2[0], sfr2[1], "r-", label="slantedgeMTF")
     plt.title("SFR Comparison")
     plt.xlabel("Frequency")
