@@ -7,7 +7,12 @@
 ```
 py_sfrmat/
 ├── sfrmat5.py          # 核心 SFR 计算类
-├── sfrmat5_gui.py      # FreeSimpleGUI 界面
+├── GUI.py              # FreeSimpleGUI 界面
+├── src/                # 源代码目录
+│   ├── slantedgeMTF.py # 倾斜边缘 MTF 计算
+│   └── test_sfr_comparison.py # 测试程序
+├── docs/               # 文档目录
+│   └── 算法比较报告.md # 算法比较报告
 ├── images/             # 测试图像目录
 │   ├── ISO 12233-2023 chart.jpg
 │   ├── Plan N 10x-1.bmp
@@ -17,6 +22,13 @@ py_sfrmat/
 ```
 
 ## 更新日志
+
+### v1.0.2 (2026.4.17)
+- 修复了 ESF 在边界位置的异常数据问题
+- 优化了边缘投影算法，提高了精度
+- 改进了 GUI 界面，完全基于 FreeSimpleGUI
+- 修复了频率单位转换问题
+- 增强了稳定性和可靠性
 
 ### v1.0.1 (2026.4.14)
 - 初始 Python 版本发布
@@ -63,7 +75,7 @@ pip install pandas openpyxl
 - `scipy`: 科学计算（FFT、信号处理）
 - `matplotlib`: 数据可视化和图表绘制
 - `opencv-python`: 图像读取和处理
-- `FreeSimpleGUI`: 图形用户界面（替代 tkinter）
+- `FreeSimpleGUI`: 图形用户界面
 - `PIL` (Pillow): 图像处理支持
 - `pandas`: Excel 数据导出（可选）
 - `openpyxl`: Excel 文件支持（可选）
@@ -74,13 +86,7 @@ pip install pandas openpyxl
 
 ```bash
 # 启动 GUI 界面
-python sfrmat5.py --gui
-```
-
-或者直接运行 GUI 文件：
-
-```bash
-python sfrmat5_gui.py
+python GUI.py
 ```
 
 GUI 界面提供以下功能：
@@ -206,7 +212,7 @@ minalpha = 0.5
 ## 与 MATLAB 版本的比较
 
 ### 相同点
-- 核心算法实现
+- 核心算法实现，包括精确的像素投影、窗口函数和边缘拟合
 - 输入输出格式
 - 参数设置和默认值
 - 边缘检测和拟合方法
@@ -219,6 +225,9 @@ minalpha = 0.5
 - 支持 Excel 数据导出
 - 跨平台兼容性
 - 独立的 ROI 选择工具类
+- 修复了 ESF 在边界位置的异常数据问题
+- 优化的边缘投影算法，提高了精度
+- 现代化的 FreeSimpleGUI 界面
 
 ## 应用场景
 
