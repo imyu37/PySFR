@@ -114,7 +114,7 @@ python sfrmat5.py
 
 ```python
 import numpy as np
-from sfrmat5 import SFRCalculator
+from src.sfrmat5 import SFRCalculator
 
 # 创建 SFR 计算器实例
 sfr = SFRCalculator()

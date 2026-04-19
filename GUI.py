@@ -15,7 +15,7 @@ import numpy as np
 from matplotlib.widgets import RectangleSelector
 from PIL import Image
 
-from sfrmat5 import SFRCalculator
+from src.sfrmat5 import SFRCalculator
 
 if platform.system() == "Windows":
     plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "Arial"]
@@ -75,7 +75,8 @@ class ROITool:
                 bottom - top,
                 linewidth=2,
                 edgecolor="red",
-                facecolor="none",
+                facecolor="red",
+                alpha=0.3,  # 设置透明度
             )
             ax.add_patch(roi_rect)
             fig.canvas.draw()
@@ -132,6 +133,7 @@ class SFRMatGUI:
         self.current_image_path = None
         self.roi_coords = None
         self.results = None
+        self.sfr_values = None  # 用于存储SFR关键值
 
     def create_layout(self):
         """创建GUI布局"""
@@ -237,8 +239,8 @@ class SFRMatGUI:
                     key="-CALCULATE_SFR-",
                     button_color=("white", "green"),
                 ),
-                sg.Button("显示图表", size=(10, 1), key="-SHOW_PLOTS-"),
-                sg.Button("显示多图表", size=(10, 1), key="-SHOW_MULTI_PLOTS-"),
+                sg.Button("显示SFR", size=(10, 1), key="-SHOW_PLOTS-"),
+                sg.Button("显示多图", size=(10, 1), key="-SHOW_MULTI_PLOTS-"),
                 sg.Button("保存数据", size=(10, 1), key="-SAVE_DATA-"),
             ],
         ]
@@ -293,6 +295,8 @@ class SFRMatGUI:
                 ("图像文件", "*.png *.jpg *.jpeg *.tiff *.tif *.bmp *.gif"),
                 ("所有文件", "*.*"),
             ),
+            no_window=True,
+            keep_on_top=True,
         )
 
         if file_path:
@@ -377,11 +381,14 @@ class SFRMatGUI:
             self.roi_coords = roi_tool.select_roi()
 
             if self.roi_coords:
-                # 裁剪图像到ROI
+                # 保存原始图像用于预览
+                original_image = self.calculator.image.copy()
+
+                # 裁剪图像到ROI用于分析
                 cropped_image = crop_to_roi(self.calculator.image, self.roi_coords)
 
-                # 更新预览
-                display_image = cropped_image.copy()
+                # 更新预览 - 显示包含ROI方框的整张原始图
+                display_image = original_image.copy()
                 if len(display_image.shape) == 3:
                     display_image = (display_image / display_image.max() * 255).astype(
                         np.uint8
@@ -390,6 +397,32 @@ class SFRMatGUI:
                     display_image = (display_image / display_image.max() * 255).astype(
                         np.uint8
                     )
+
+                # 在图像上绘制ROI方框
+                left, top, right, bottom = self.roi_coords
+
+                # 绘制红色边框和填充（与ROI选择时保持一致）
+                # 对于单色图像，需要转换为3通道才能显示红色
+                if len(display_image.shape) == 2:
+                    # 单色图像转换为3通道
+                    display_image = cv2.cvtColor(display_image, cv2.COLOR_GRAY2RGB)
+
+                # 先绘制红色填充（透明度30%）
+                overlay = display_image.copy()
+                cv2.rectangle(
+                    overlay,
+                    (left, top),
+                    (right, bottom),
+                    (255, 0, 0),
+                    -1,  # -1表示填充
+                )
+                # 应用透明度
+                cv2.addWeighted(overlay, 0.3, display_image, 0.7, 0, display_image)
+
+                # 再绘制红色边框（线宽1）
+                cv2.rectangle(
+                    display_image, (left, top), (right, bottom), (255, 0, 0), 1
+                )
 
                 # 调整大小
                 height, width = display_image.shape[:2]
@@ -475,6 +508,85 @@ class SFRMatGUI:
             except Exception as e:
                 self.sg.popup_error(f"无法清除ROI: {str(e)}")
 
+    def calculate_sfr_values(self, dat, target_values):
+        """计算指定SFR值对应的频率"""
+        if dat is None or len(dat) == 0:
+            return None
+
+        sfr_values = {}
+        num_channels = dat.shape[1] - 1  # 减去频率列
+
+        for target in target_values:
+            sfr_values[target] = []
+
+            for channel in range(num_channels):
+                # 查找SFR等于或接近目标值的频率
+                sfr_data = dat[:, channel + 1]
+                freq_data = dat[:, 0]
+
+                # 找到最接近目标值的点
+                idx = np.argmin(np.abs(sfr_data - target))
+
+                if sfr_data[idx] >= target - 0.05:  # 允许一定的误差范围
+                    # 使用线性插值得到更精确的值
+                    if idx > 0 and idx < len(sfr_data) - 1:
+                        # 三点插值
+                        x1, x2, x3 = freq_data[idx - 1 : idx + 2]
+                        y1, y2, y3 = sfr_data[idx - 1 : idx + 2]
+
+                        # 使用抛物线插值
+                        if y1 != y2 and y2 != y3:
+                            # 计算抛物线参数
+                            denom = (x1 - x2) * (x1 - x3) * (x2 - x3)
+                            a = (
+                                x3 * (y2 - y1) + x2 * (y1 - y3) + x1 * (y3 - y2)
+                            ) / denom
+                            b = (
+                                x3 * x3 * (y1 - y2)
+                                + x2 * x2 * (y3 - y1)
+                                + x1 * x1 * (y2 - y3)
+                            ) / denom
+                            c = (
+                                x2 * x3 * (x2 - x3) * y1
+                                + x3 * x1 * (x3 - x1) * y2
+                                + x1 * x2 * (x1 - x2) * y3
+                            ) / denom
+
+                            # 解方程 a*x^2 + b*x + c = target
+                            discriminant = b * b - 4 * a * (c - target)
+                            if discriminant >= 0:
+                                root1 = (-b + np.sqrt(discriminant)) / (2 * a)
+                                root2 = (-b - np.sqrt(discriminant)) / (2 * a)
+
+                                # 选择在范围内的根
+                                valid_roots = [
+                                    r for r in [root1, root2] if x1 <= r <= x3
+                                ]
+                                if valid_roots:
+                                    sfr_values[target].append(min(valid_roots))
+                                else:
+                                    sfr_values[target].append(freq_data[idx])
+                            else:
+                                sfr_values[target].append(freq_data[idx])
+                        else:
+                            # 线性插值
+                            if sfr_data[idx] > target:
+                                if idx > 0:
+                                    x1, x2 = freq_data[idx - 1], freq_data[idx]
+                                    y1, y2 = sfr_data[idx - 1], sfr_data[idx]
+                                    freq = x1 + (target - y1) * (x2 - x1) / (y2 - y1)
+                                    sfr_values[target].append(freq)
+                                else:
+                                    sfr_values[target].append(freq_data[idx])
+                            else:
+                                sfr_values[target].append(freq_data[idx])
+                    else:
+                        sfr_values[target].append(freq_data[idx])
+                else:
+                    sfr_values[target].append(0.0)
+
+        return sfr_values
+
     def display_results(self, window, results):
         """在结果区域显示分析结果"""
         status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = results
@@ -482,6 +594,10 @@ class SFRMatGUI:
         if status != 0 or dat is None:
             result_str = "SFR计算失败"
         else:
+            # 计算SFR30和SFR10的值
+            target_values = [0.5, 0.3, 0.1]  # SFR50, SFR30, SFR10
+            sfr_values = self.calculate_sfr_values(dat, target_values)
+
             # 构建结果字符串
             result_str = f"""SFR分析结果
 {"=" * 50}
@@ -494,9 +610,18 @@ class SFRMatGUI:
 
 关键指标:
 - SFR50: {sfr50:.4f}
-
-采样效率:
 """
+
+            # 添加SFR30和SFR10的值
+            if sfr_values and 0.3 in sfr_values and len(sfr_values[0.3]) > 0:
+                sfr30 = sfr_values[0.3][-1]  # 使用亮度通道的值
+                result_str += f"- SFR30: {sfr30:.4f}\n"
+
+            if sfr_values and 0.1 in sfr_values and len(sfr_values[0.1]) > 0:
+                sfr10 = sfr_values[0.1][-1]  # 使用亮度通道的值
+                result_str += f"- SFR10: {sfr10:.4f}\n"
+
+            result_str += "\n采样效率:\n"
 
             # 添加各通道的采样效率
             channel_names = ["R", "G", "B", "Lum"]
@@ -506,6 +631,7 @@ class SFRMatGUI:
 
         window["-RESULTS_TEXT-"].update(result_str)
         self.results = results
+        self.sfr_values = sfr_values  # 保存用于图表显示
 
     def run(self):
         """启动GUI事件循环"""
@@ -579,12 +705,21 @@ class SFRMatGUI:
 
                         plt.figure(figsize=(7, 5))
 
+                        # 通道名称映射
+                        channel_names = ["R", "G", "B", "Lum"]
+
                         for i in range(num_channels):
+                            # 使用颜色通道名称而不是通道编号
+                            channel_name = (
+                                channel_names[i]
+                                if i < len(channel_names)
+                                else f"通道{i}"
+                            )
                             plt.plot(
                                 dat[:, 0],
                                 dat[:, i + 1],
                                 color=colors[i % len(colors)],
-                                label=f"通道{i}",
+                                label=channel_name,
                             )
 
                         # 亮度通道使用散点绘制
@@ -609,7 +744,40 @@ class SFRMatGUI:
                         plt.ylabel("SFR")
                         plt.title("空间频率响应")
 
-                        # 添加采样效率数据
+                        # 添加SFR关键值标注
+                        if hasattr(self, "sfr_values") and self.sfr_values:
+                            sfr_text = "SFR关键值:\n"
+
+                            # SFR50标注
+                            if 0.5 in self.sfr_values and len(self.sfr_values[0.5]) > 0:
+                                sfr50_val = self.sfr_values[0.5][-1]  # 亮度通道
+                                sfr_text += f"SFR50: {sfr50_val:.3f}\n"
+
+                            # SFR30标注
+                            if 0.3 in self.sfr_values and len(self.sfr_values[0.3]) > 0:
+                                sfr30_val = self.sfr_values[0.3][-1]  # 亮度通道
+                                sfr_text += f"SFR30: {sfr30_val:.3f}\n"
+
+                            # SFR10标注
+                            if 0.1 in self.sfr_values and len(self.sfr_values[0.1]) > 0:
+                                sfr10_val = self.sfr_values[0.1][-1]  # 亮度通道
+                                sfr_text += f"SFR10: {sfr10_val:.3f}\n"
+
+                            # 在右上角添加文本框
+                            plt.text(
+                                0.98,
+                                0.98,
+                                sfr_text,
+                                transform=plt.gca().transAxes,
+                                horizontalalignment="right",
+                                verticalalignment="top",
+                                bbox=dict(
+                                    boxstyle="round", facecolor="white", alpha=0.8
+                                ),
+                                fontsize=9,
+                            )
+
+                        # 添加采样效率数据（移到左下角）
                         if e is not None and e.shape[1] > 0:
                             channel_names = ["R", "G", "B", "Lum"]
                             text_str = "采样效率:\n"
@@ -617,15 +785,16 @@ class SFRMatGUI:
                                 text_str += f"{channel_names[i]}: {e[0, i]:.1f}%\n"
 
                             plt.text(
-                                0.98,
-                                0.98,
+                                0.02,
+                                0.02,
                                 text_str,
                                 transform=plt.gca().transAxes,
-                                horizontalalignment="right",
-                                verticalalignment="top",
+                                horizontalalignment="left",
+                                verticalalignment="bottom",
                                 bbox=dict(
                                     boxstyle="round", facecolor="white", alpha=0.8
                                 ),
+                                fontsize=9,
                             )
 
                         plt.legend()
@@ -712,12 +881,21 @@ class SFRMatGUI:
                         colors = ["red", "green", "blue", "black"]
                         num_channels = dat.shape[1] - 1
 
+                        # 通道名称映射
+                        channel_names = ["R", "G", "B", "Lum"]
+
                         for i in range(num_channels):
+                            # 使用颜色通道名称而不是通道编号
+                            channel_name = (
+                                channel_names[i]
+                                if i < len(channel_names)
+                                else f"通道{i}"
+                            )
                             axes[1, 0].plot(
                                 dat[:, 0],
                                 dat[:, i + 1],
                                 color=colors[i % len(colors)],
-                                label=f"通道{i}",
+                                label=channel_name,
                             )
 
                         # 亮度通道使用散点绘制
@@ -800,7 +978,7 @@ class SFRMatGUI:
                         self.sg.popup_error("无有效结果可显示")
 
                 except Exception as e:
-                    self.sg.popup_error(f"无法显示多图表: {str(e)}")
+                    self.sg.popup_error(f"无法显示多图: {str(e)}")
 
             elif event == "-SAVE_DATA-":
                 if self.results is None:
@@ -823,6 +1001,8 @@ class SFRMatGUI:
                                 ("Excel文件", "*.xlsx"),
                                 ("所有文件", "*.*"),
                             ),
+                            no_window=True,
+                            keep_on_top=True,
                         )
 
                         if save_path:

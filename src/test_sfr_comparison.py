@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # 导入两个模块
 import slantedgeMTF
-from sfrmat5 import SFRCalculator
+from src.sfrmat5 import SFRCalculator
 
 # 测试图像路径
 IMAGE_PATH = "images/Test_edge1.tif"
