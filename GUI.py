@@ -626,8 +626,12 @@ class SFRMatGUI:
             # 添加各通道的采样效率
             channel_names = ["R", "G", "B", "Lum"]
             if e is not None and e.shape[1] > 0:
-                for i in range(min(e.shape[1], len(channel_names))):
-                    result_str += f"- {channel_names[i]}: {e[0, i]:.1f}%\n"
+                # 对于单色图像，显示为Lum通道的采样效率
+                if e.shape[1] == 1:
+                    result_str += f"- Lum: {e[0, 0]:.1f}%\n"
+                else:
+                    for i in range(min(e.shape[1], len(channel_names))):
+                        result_str += f"- {channel_names[i]}: {e[0, i]:.1f}%\n"
 
         window["-RESULTS_TEXT-"].update(result_str)
         self.results = results
@@ -705,33 +709,54 @@ class SFRMatGUI:
 
                         plt.figure(figsize=(7, 5))
 
+                        # 判断是否为单色图像（只有1个通道）
+                        is_monochrome = num_channels == 1
+
                         # 通道名称映射
                         channel_names = ["R", "G", "B", "Lum"]
 
                         for i in range(num_channels):
-                            # 使用颜色通道名称而不是通道编号
-                            channel_name = (
-                                channel_names[i]
-                                if i < len(channel_names)
-                                else f"通道{i}"
-                            )
+                            # 使用通道名称而不是通道编号
+                            # 对于单色图像，显示为Lum通道
+                            if is_monochrome:
+                                channel_name = "Lum"
+                            else:
+                                channel_name = (
+                                    channel_names[i]
+                                    if i < len(channel_names)
+                                    else f"通道{i}"
+                                )
                             plt.plot(
                                 dat[:, 0],
                                 dat[:, i + 1],
                                 color=colors[i % len(colors)],
-                                label=channel_name,
+                                label=channel_name
+                                if not is_monochrome
+                                else "",  # 单色时不显示图例
                             )
 
-                        # 亮度通道使用散点绘制
-                        plt.scatter(
-                            dat[:, 0],
-                            dat[:, -1],
-                            s=40,
-                            marker="o",
-                            facecolors="none",
-                            edgecolors="black",
-                            label="Lum",
-                        )
+                        # 对于彩色图像，只绘制不带marker的Lum通道（避免重复）
+                        if num_channels > 1:
+                            # 检查是否已经有Lum通道的曲线
+                            has_lum_curve = False
+                            for i in range(num_channels):
+                                if i < len(channel_names) and channel_names[i] == "Lum":
+                                    has_lum_curve = True
+                                    break
+
+                            # 如果没有Lum通道的曲线，则绘制散点
+                            if not has_lum_curve:
+                                plt.scatter(
+                                    dat[:, 0],
+                                    dat[:, -1],
+                                    s=40,
+                                    marker="o",
+                                    facecolors="none",
+                                    edgecolors="black",
+                                    label="Lum"
+                                    if not is_monochrome
+                                    else "",  # 单色时不显示图例
+                                )
 
                         # 设置x轴标签
                         if is_dpi:
@@ -781,8 +806,12 @@ class SFRMatGUI:
                         if e is not None and e.shape[1] > 0:
                             channel_names = ["R", "G", "B", "Lum"]
                             text_str = "采样效率:\n"
-                            for i in range(min(e.shape[1], len(channel_names))):
-                                text_str += f"{channel_names[i]}: {e[0, i]:.1f}%\n"
+                            # 对于单色图像，显示为Lum通道的采样效率
+                            if e.shape[1] == 1:
+                                text_str += f"Lum: {e[0, 0]:.1f}%\n"
+                            else:
+                                for i in range(min(e.shape[1], len(channel_names))):
+                                    text_str += f"{channel_names[i]}: {e[0, i]:.1f}%\n"
 
                             plt.text(
                                 0.02,
@@ -881,33 +910,54 @@ class SFRMatGUI:
                         colors = ["red", "green", "blue", "black"]
                         num_channels = dat.shape[1] - 1
 
+                        # 判断是否为单色图像（只有1个通道）
+                        is_monochrome = num_channels == 1
+
                         # 通道名称映射
                         channel_names = ["R", "G", "B", "Lum"]
 
                         for i in range(num_channels):
-                            # 使用颜色通道名称而不是通道编号
-                            channel_name = (
-                                channel_names[i]
-                                if i < len(channel_names)
-                                else f"通道{i}"
-                            )
+                            # 使用通道名称而不是通道编号
+                            # 对于单色图像，显示为Lum通道
+                            if is_monochrome:
+                                channel_name = "Lum"
+                            else:
+                                channel_name = (
+                                    channel_names[i]
+                                    if i < len(channel_names)
+                                    else f"通道{i}"
+                                )
                             axes[1, 0].plot(
                                 dat[:, 0],
                                 dat[:, i + 1],
                                 color=colors[i % len(colors)],
-                                label=channel_name,
+                                label=channel_name
+                                if not is_monochrome
+                                else "",  # 单色时不显示图例
                             )
 
-                        # 亮度通道使用散点绘制
-                        axes[1, 0].scatter(
-                            dat[:, 0],
-                            dat[:, -1],
-                            s=40,
-                            marker="o",
-                            facecolors="none",
-                            edgecolors="black",
-                            label="Lum",
-                        )
+                        # 对于彩色图像，只绘制不带marker的Lum通道（避免重复）
+                        if num_channels > 1:
+                            # 检查是否已经有Lum通道的曲线
+                            has_lum_curve = False
+                            for i in range(num_channels):
+                                if i < len(channel_names) and channel_names[i] == "Lum":
+                                    has_lum_curve = True
+                                    break
+
+                            # 如果没有Lum通道的曲线，则绘制散点
+                            if not has_lum_curve:
+                                axes[1, 0].scatter(
+                                    dat[:, 0],
+                                    dat[:, -1],
+                                    s=40,
+                                    marker="o",
+                                    facecolors="none",
+                                    edgecolors="black",
+                                    label="Lum"
+                                    if not is_monochrome
+                                    else "",  # 单色时不显示图例
+                                )
 
                         # 设置x轴标签
                         if is_dpi:
@@ -924,8 +974,12 @@ class SFRMatGUI:
                         if e is not None and e.shape[1] > 0:
                             channel_names = ["R", "G", "B", "Lum"]
                             text_str = "采样效率:\n"
-                            for i in range(min(e.shape[1], len(channel_names))):
-                                text_str += f"{channel_names[i]}: {e[0, i]:.1f}%\n"
+                            # 对于单色图像，显示为Lum通道的采样效率
+                            if e.shape[1] == 1:
+                                text_str += f"Lum: {e[0, 0]:.1f}%\n"
+                            else:
+                                for i in range(min(e.shape[1], len(channel_names))):
+                                    text_str += f"{channel_names[i]}: {e[0, i]:.1f}%\n"
 
                             axes[1, 0].text(
                                 0.98,
@@ -1012,11 +1066,15 @@ class SFRMatGUI:
                             # 创建DataFrame用于保存SFR数据
                             columns = ["频率"]
                             channel_names = ["R", "G", "B", "Lum"]
-                            for i in range(dat.shape[1] - 1):
-                                if i < len(channel_names):
-                                    columns.append(channel_names[i])
-                                else:
-                                    columns.append(f"通道{i}")
+                            # 对于单色图像，显示为Lum通道
+                            if dat.shape[1] - 1 == 1:
+                                columns.append("Lum")
+                            else:
+                                for i in range(dat.shape[1] - 1):
+                                    if i < len(channel_names):
+                                        columns.append(channel_names[i])
+                                    else:
+                                        columns.append(f"通道{i}")
 
                             sfr_df = pd.DataFrame(dat, columns=columns)
 
@@ -1052,11 +1110,22 @@ class SFRMatGUI:
                                 # 创建采样效率工作表 - 第三个工作表
                                 if e is not None and e.shape[1] > 0:
                                     efficiency_data = {"通道": [], "采样效率(%)": []}
-                                    for i in range(min(e.shape[1], len(channel_names))):
-                                        efficiency_data["通道"].append(channel_names[i])
+                                    # 对于单色图像，显示为Lum通道的采样效率
+                                    if e.shape[1] == 1:
+                                        efficiency_data["通道"].append("Lum")
                                         efficiency_data["采样效率(%)"].append(
-                                            f"{e[0, i]:.1f}"
+                                            f"{e[0, 0]:.1f}"
                                         )
+                                    else:
+                                        for i in range(
+                                            min(e.shape[1], len(channel_names))
+                                        ):
+                                            efficiency_data["通道"].append(
+                                                channel_names[i]
+                                            )
+                                            efficiency_data["采样效率(%)"].append(
+                                                f"{e[0, i]:.1f}"
+                                            )
 
                                     efficiency_df = pd.DataFrame(efficiency_data)
                                     efficiency_df.to_excel(
