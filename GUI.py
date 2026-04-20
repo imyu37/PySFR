@@ -1,6 +1,6 @@
 """
 SFRMAT5 GUI界面
-基于MATLAB sfrmat5.m的Python实现
+基于MATLAB sfrmat5.m的Python实现 - PySFR模块
 """
 
 import io
@@ -15,7 +15,7 @@ import numpy as np
 from matplotlib.widgets import RectangleSelector
 from PIL import Image
 
-from src.sfrmat5 import SFRCalculator
+from src.PySFR import SFRCalculator
 
 if platform.system() == "Windows":
     plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "Arial"]
@@ -23,15 +23,7 @@ else:
     plt.rcParams["font.sans-serif"] = ["DejaVu Sans", "Arial"]
 plt.rcParams["axes.unicode_minus"] = False
 
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("sfrmat5_gui.log", encoding="utf-8"),
-        logging.StreamHandler(),
-    ],
-)
+# 日志配置 - 使用PySFR模块的日志系统
 logger = logging.getLogger(__name__)
 
 
@@ -304,7 +296,6 @@ class SFRMatGUI:
 
     def load_image(self, window):
         """加载图像文件"""
-        logger.info("打开文件对话框选择图像")
 
         # 使用FreeSimpleGUI文件对话框
         file_path = self.sg.popup_get_file(
@@ -319,8 +310,6 @@ class SFRMatGUI:
 
         if file_path:
             try:
-                logger.info(f"尝试加载图像: {file_path}")
-
                 # 使用cv2加载图像
                 image = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
                 if image is None:
@@ -377,15 +366,12 @@ class SFRMatGUI:
                 window["-IMAGE_PREVIEW-"].update(data=img_byte_arr)
                 window["-STATUSBAR-"].update("图像加载成功")
 
-                logger.info("图像加载并显示成功")
                 return True
             except Exception as e:
-                logger.error(f"无法加载图像: {str(e)}")
                 self.sg.popup_error(f"无法加载图像: {str(e)}")
                 window["-STATUSBAR-"].update("图像加载错误")
                 return False
 
-        logger.debug("未选择图像文件")
         return False
 
     def choose_roi(self, window):
@@ -533,6 +519,7 @@ class SFRMatGUI:
 版本信息:
 - 版本: 1.0.0
 - 基于: MATLAB sfrmat5.m 算法
+- 核心模块: PySFR (原sfrmat5.py)
 - Python版本: 3.12+
 
 联系信息:
@@ -1260,7 +1247,7 @@ class SFRMatGUI:
 
 def main():
     """主函数"""
-    logger.info("启动SFRMAT5 GUI")
+    # 启动SFRMAT5 GUI
     gui = SFRMatGUI()
     gui.run()
 

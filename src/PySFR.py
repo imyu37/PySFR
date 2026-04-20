@@ -19,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("sfrmat5.log", encoding="utf-8"),
+        logging.FileHandler("PySFR.log", encoding="utf-8"),
         logging.StreamHandler(),
     ],
 )

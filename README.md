@@ -7,7 +7,7 @@
 ```
 py_sfrmat/
 ├── src/                # 源代码目录
-│   ├── sfrmat5.py      # 核心 SFR 计算类
+│   ├── PySFR.py        # 核心 SFR 计算类（原sfrmat5.py）
 │   ├── slantedgeMTF.py # 倾斜边缘 MTF 计算
 │   └── test_sfr_comparison.py # SFR 比较测试程序
 ├── docs/               # 文档目录
@@ -123,7 +123,7 @@ GUI 界面提供以下功能：
 
 ```python
 import numpy as np
-from src.sfrmat5 import SFRCalculator
+from src.PySFR import SFRCalculator
 
 # 创建 SFR 计算器实例
 sfr = SFRCalculator()
@@ -226,7 +226,7 @@ minalpha = 0.5
 程序使用 Python 的 `logging` 模块提供详细的运行日志：
 
 - 日志级别：INFO
-- 输出：控制台和 `sfrmat5.log` 文件
+- 输出：控制台和 `PySFR.log` 文件
 - 编码：UTF-8
 
 ## 与 MATLAB 版本的比较
@@ -248,6 +248,7 @@ minalpha = 0.5
 - 修复了 ESF 在边界位置的异常数据问题
 - 优化的边缘投影算法，提高了精度
 - 现代化的 FreeSimpleGUI 界面
+- 模块重命名：核心模块从 sfrmat5.py 重命名为 PySFR.py
 
 ## 应用场景
 
