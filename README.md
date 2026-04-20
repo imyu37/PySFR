@@ -6,36 +6,55 @@
 
 ```
 py_sfrmat/
-├── sfrmat5.py          # 核心 SFR 计算类
-├── GUI.py              # FreeSimpleGUI 界面
 ├── src/                # 源代码目录
+│   ├── sfrmat5.py      # 核心 SFR 计算类
 │   ├── slantedgeMTF.py # 倾斜边缘 MTF 计算
-│   └── test_sfr_comparison.py # 测试程序
+│   └── test_sfr_comparison.py # SFR 比较测试程序
 ├── docs/               # 文档目录
+│   ├── 待办事项.md     # 项目开发进度跟踪
 │   └── 算法比较报告.md # 算法比较报告
 ├── images/             # 测试图像目录
 │   ├── ISO 12233-2023 chart.jpg
 │   ├── Plan N 10x-1.bmp
 │   ├── Test_edge1.tif
 │   └── Test_edge1_mono.tif
+├── data/               # 数据输出目录
+│   ├── Plan N 10x-1.xlsx
+│   └── Test_edge1.xlsx
+├── GUI.py              # FreeSimpleGUI 界面（主程序）
 └── README.md          # 项目文档
 ```
 
 ## 更新日志
 
-### v1.0.2 (2026.4.17)
-- 修复了 ESF 在边界位置的异常数据问题
-- 优化了边缘投影算法，提高了精度
-- 改进了 GUI 界面，完全基于 FreeSimpleGUI
-- 修复了频率单位转换问题
-- 增强了稳定性和可靠性
+### v1.0.0 (2026.4.20)
+**完整功能版本发布**
 
-### v1.0.1 (2026.4.14)
-- 初始 Python 版本发布
-- 基于 sfrmat5.m 的完整功能移植
-- 添加 FreeSimpleGUI 界面支持
-- 改进的错误处理和日志记录
-- 支持 Excel 数据导出
+#### 核心功能
+- 基于 MATLAB sfrmat5.m 算法的完整 Python 移植
+- 实现 ISO 12233 标准的空间频率响应（SFR）测量
+- 支持 RGB 和亮度通道的独立分析
+- 4 倍超采样技术提高测量精度
+- 窗口函数选择（Tukey 窗、汉明窗）
+
+#### GUI 界面特性
+- 现代化 FreeSimpleGUI 用户界面
+- 交互式 ROI 区域选择工具
+- 实时结果显示和图表绘制
+- "关于"菜单功能，显示版本信息、作者信息和联系方式
+- 中文界面支持，所有对话框和按钮文字中文化
+
+#### 算法优化
+- 精确的边缘检测和加权拟合算法
+- 修复 ESF 在边界位置的异常数据问题
+- 优化边缘投影算法，提高精度
+- 奈奎斯特频率标识：基于探测器采样间隔计算
+- 频率单位一致性保证
+
+#### 数据导出
+- 支持 Excel 格式数据导出
+- 完整的日志记录和错误处理
+- 跨平台兼容（Windows/Linux/macOS）
 
 ## 项目概述
 
@@ -47,11 +66,15 @@ py_sfrmat/
 - **边缘检测**：自动检测和拟合图像中的边缘
 - **超采样技术**：使用 4 倍超采样提高测量精度
 - **窗口函数**：支持 Tukey 窗和汉明窗
-- **双模式界面**：提供 FreeSimpleGUI 界面和命令行界面
+- **现代化 GUI 界面**：基于 FreeSimpleGUI 的现代化用户界面
 - **ROI 选择工具**：交互式 ROI 区域选择
 - **数据导出**：支持 Excel 格式数据导出
 - **详细日志**：完整的日志记录和错误处理
 - **跨平台支持**：Windows/Linux/macOS 兼容
+- **关于菜单**：完整的版本信息、作者信息和联系方式
+- **奈奎斯特频率标识**：基于探测器采样间隔的精确标识
+- **中文界面**：所有对话框和按钮文字均使用中文
+- **实时结果显示**：MTF30/MTF10等关键指标实时显示
 
 ## 安装要求
 
@@ -96,21 +119,7 @@ GUI 界面提供以下功能：
 - 实时结果显示
 - 数据导出功能
 
-### 2. 命令行模式
-
-```bash
-# 基本命令行模式（交互式）
-python sfrmat5.py
-```
-
-命令行模式会依次提示：
-- 选择图像文件
-- 选择 ROI 区域
-- 输入采样间隔
-- 显示分析结果
-- 可选保存到 Excel
-
-### 3. 程序化使用（API 调用）
+### 2. 程序化使用（API 调用）
 
 ```python
 import numpy as np
@@ -119,10 +128,7 @@ from src.sfrmat5 import SFRCalculator
 # 创建 SFR 计算器实例
 sfr = SFRCalculator()
 
-# 方法1：GUI 模式（自动文件选择和 ROI 选择）
-status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr()
-
-# 方法2：非 GUI 模式（直接传入数据）
+# 非 GUI 模式（直接传入数据）
 image_data = np.array(...)  # 你的图像数据
 status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr(
     io=1,                    # 非 GUI 模式
@@ -132,6 +138,20 @@ status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr(
     wflag=0                  # 窗口函数选择（0=Tukey, 1=Hamming）
 )
 ```
+
+### 3. 测试程序
+
+项目包含测试程序用于验证算法准确性：
+
+```bash
+# 运行 SFR 比较测试
+python src/test_sfr_comparison.py
+```
+
+测试程序功能：
+- 比较不同算法的 SFR 计算结果
+- 验证边缘检测和拟合精度
+- 测试多通道处理能力
 
 ## 输出结果说明
 
