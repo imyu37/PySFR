@@ -138,6 +138,23 @@ class SFRMatGUI:
     def create_layout(self):
         """创建GUI布局"""
 
+        # 菜单栏
+        menu_layout = [
+            [
+                sg.Menu(
+                    [
+                        [
+                            "帮助",
+                            [
+                                "关于",
+                            ],
+                        ],
+                    ],
+                    key="-MENU-",
+                )
+            ],
+        ]
+
         # 标题栏
         title_layout = [
             [
@@ -261,6 +278,7 @@ class SFRMatGUI:
 
         # 主布局
         layout = [
+            menu_layout,
             title_layout,
             [
                 sg.Column(
@@ -507,6 +525,35 @@ class SFRMatGUI:
 
             except Exception as e:
                 self.sg.popup_error(f"无法清除ROI: {str(e)}")
+
+    def show_about_dialog(self):
+        """显示关于对话框"""
+        about_text = """SFRMAT5 - 空间频率响应分析工具
+
+版本信息:
+- 版本: 1.0.0
+- 基于: MATLAB sfrmat5.m 算法
+- Python版本: 3.12+
+
+联系信息:
+- 邮箱: wanyong_37@hotmail.com
+- GitHub: https://github.com/YONG/py_sfrmat
+
+功能特性:
+- 基于ISO 12233标准的SFR计算
+- 支持边缘检测和ROI选择
+- 多种窗口函数选择
+- 实时结果显示和图表绘制
+- 数据导出功能
+"""
+
+        self.sg.popup(
+            about_text,
+            title="关于",
+            font=("Microsoft Sans Serif", 10),
+            keep_on_top=True,
+            non_blocking=False,
+        )
 
     def calculate_sfr_values(self, dat, target_values):
         """计算指定SFR值对应的频率"""
@@ -1093,6 +1140,10 @@ class SFRMatGUI:
 
                 except Exception as e:
                     self.sg.popup_error(f"无法显示多图: {str(e)}")
+
+            elif event == "关于":
+                # 显示关于对话框
+                self.show_about_dialog()
 
             elif event == "-SAVE_DATA-":
                 if self.results is None:
