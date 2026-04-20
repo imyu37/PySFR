@@ -587,7 +587,7 @@ class SFRMatGUI:
 
         return sfr_values
 
-    def display_results(self, window, results):
+    def display_results(self, window, results, sampling_interval):
         """在结果区域显示分析结果"""
         status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = results
 
@@ -605,7 +605,7 @@ class SFRMatGUI:
 基本参数:
 - 状态: {"成功" if status == 0 else "失败"}
 - 合并因子: {nbin}
-- 采样间隔: {del2:.4f}
+- 采样间隔: {sampling_interval:.4f}
 - 频率单位: {"cycles/pixel" if is_dpi else "cycles/mm"}
 
 关键指标:
@@ -686,7 +686,7 @@ class SFRMatGUI:
                         wflag=window_type,
                     )
 
-                    self.display_results(window, results)
+                    self.display_results(window, results, sampling_interval)
                     self.sg.popup("成功", "SFR计算完成！")
                     window["-STATUSBAR-"].update("计算完成")
 
@@ -768,6 +768,36 @@ class SFRMatGUI:
                         plt.ylim(0, 1)
                         plt.ylabel("SFR")
                         plt.title("空间频率响应")
+
+                        # 计算并添加奈奎斯特采样频率标识
+                        if not is_dpi and sampling_interval > 0:
+                            # 计算奈奎斯特频率 (基于探测器采样间隔: 1/(2*采样间隔))
+                            nyquist_freq = 1.0 / (2.0 * sampling_interval)
+
+                            # 绘制垂直虚线标识奈奎斯特频率（仅显示在x轴附近）
+                            plt.axvline(
+                                x=nyquist_freq,
+                                ymin=0,
+                                ymax=0.1,  # 仅显示在x轴附近，高度为tick的2倍左右
+                                color="red",
+                                linestyle="--",
+                                linewidth=1.5,
+                            )
+
+                            # 在奈奎斯特频率处添加文本标注（放在标记线附近）
+                            plt.text(
+                                nyquist_freq,
+                                0.15,  # 放在标记线稍上方
+                                f"Nyquist: {nyquist_freq:.2f}",
+                                horizontalalignment="center",
+                                verticalalignment="bottom",
+                                bbox=dict(
+                                    boxstyle="round,pad=0.3",
+                                    facecolor="yellow",
+                                    alpha=0.7,
+                                ),
+                                fontsize=8,
+                            )
 
                         # 添加SFR关键值标注
                         if hasattr(self, "sfr_values") and self.sfr_values:
@@ -969,6 +999,36 @@ class SFRMatGUI:
                         axes[1, 0].set_ylim(0, 1)
                         axes[1, 0].set_ylabel("SFR", fontsize=10)
                         axes[1, 0].set_title("空间频率响应", fontsize=12)
+
+                        # 计算并添加奈奎斯特采样频率标识
+                        if not is_dpi and sampling_interval > 0:
+                            # 计算奈奎斯特频率 (基于探测器采样间隔: 1/(2*采样间隔))
+                            nyquist_freq = 1.0 / (2.0 * sampling_interval)
+
+                            # 绘制垂直虚线标识奈奎斯特频率（仅显示在x轴附近）
+                            axes[1, 0].axvline(
+                                x=nyquist_freq,
+                                ymin=0,
+                                ymax=0.1,  # 仅显示在x轴附近，高度为tick的2倍左右
+                                color="red",
+                                linestyle="--",
+                                linewidth=1.5,
+                            )
+
+                            # 在奈奎斯特频率处添加文本标注（放在标记线附近）
+                            axes[1, 0].text(
+                                nyquist_freq,
+                                0.15,  # 放在标记线稍上方
+                                f"Nyquist: {nyquist_freq:.2f}",
+                                horizontalalignment="center",
+                                verticalalignment="bottom",
+                                bbox=dict(
+                                    boxstyle="round,pad=0.3",
+                                    facecolor="yellow",
+                                    alpha=0.7,
+                                ),
+                                fontsize=8,
+                            )
 
                         # 添加采样效率数据
                         if e is not None and e.shape[1] > 0:
