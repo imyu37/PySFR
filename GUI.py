@@ -1,5 +1,5 @@
 """
-SFRMAT5 GUI界面
+GUI界面
 基于MATLAB sfrmat5.m的Python实现 - PySFR模块
 """
 
@@ -103,7 +103,7 @@ def crop_to_roi(image, roi_coords):
     return image[top:bottom, left:right]
 
 
-class SFRMatGUI:
+class SFRGUI:
     """SFR计算器GUI界面"""
 
     def __init__(self):
@@ -151,7 +151,7 @@ class SFRMatGUI:
         title_layout = [
             [
                 sg.Text(
-                    "SFRMAT5 - 空间频率响应分析",
+                    "空间频率响应分析",
                     font=("Microsoft Sans Serif", 16, "bold"),
                     justification="center",
                     expand_x=True,
@@ -514,7 +514,7 @@ class SFRMatGUI:
 
     def show_about_dialog(self):
         """显示关于对话框"""
-        about_text = """SFRMAT5 - 空间频率响应分析工具
+        about_text = """空间频率响应分析工具
 
 版本信息:
 - 版本: 1.0.0
@@ -524,7 +524,7 @@ class SFRMatGUI:
 
 联系信息:
 - 邮箱: wanyong_37@hotmail.com
-- GitHub: https://github.com/YONG/py_sfrmat
+- GitHub: https://github.com/imyu37/PySFR
 
 功能特性:
 - 基于ISO 12233标准的SFR计算
@@ -675,7 +675,7 @@ class SFRMatGUI:
         """启动GUI事件循环"""
         # 创建窗口
         layout = self.create_layout()
-        window = sg.Window("SFRMAT5", layout, size=(850, 600), resizable=False)
+        window = sg.Window("PySFR", layout, size=(850, 600), resizable=False)
 
         # 事件循环
         while True:
@@ -1247,8 +1247,8 @@ class SFRMatGUI:
 
 def main():
     """主函数"""
-    # 启动SFRMAT5 GUI
-    gui = SFRMatGUI()
+    # 启动GUI
+    gui = SFRGUI()
     gui.run()
 
 
