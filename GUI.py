@@ -519,7 +519,7 @@ class SFRMatGUI:
 版本信息:
 - 版本: 1.0.0
 - 基于: MATLAB sfrmat5.m 算法
-- 核心模块: PySFR (原sfrmat5.py)
+- 核心模块: PySFR
 - Python版本: 3.12+
 
 联系信息:
@@ -890,7 +890,7 @@ class SFRMatGUI:
                                 fontsize=9,
                             )
 
-                        #plt.legend()
+                        # plt.legend()
                         plt.grid(True)
                         plt.tight_layout()
                         plt.show()
@@ -1087,7 +1087,7 @@ class SFRMatGUI:
                                 ),
                             )
 
-                        #axes[1, 0].legend()
+                        # axes[1, 0].legend()
                         axes[1, 0].grid(True)
 
                         # 4. 显示ROI图像 - 右下
