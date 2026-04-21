@@ -890,7 +890,7 @@ class SFRMatGUI:
                                 fontsize=9,
                             )
 
-                        plt.legend()
+                        #plt.legend()
                         plt.grid(True)
                         plt.tight_layout()
                         plt.show()
@@ -1087,7 +1087,7 @@ class SFRMatGUI:
                                 ),
                             )
 
-                        axes[1, 0].legend()
+                        #axes[1, 0].legend()
                         axes[1, 0].grid(True)
 
                         # 4. 显示ROI图像 - 右下

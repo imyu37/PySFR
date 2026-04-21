@@ -1,11 +1,11 @@
-# py_sfrmat - Python 空间频率响应分析工具
+# PySFR - Python 空间频率响应分析工具
 
 基于 MATLAB 的 `sfrmat5.m` 移植的 Python 实现，用于计算图像系统的空间频率响应（SFR）。支持命令行和 GUI 两种操作模式。
 
 ## 项目结构
 
 ```
-py_sfrmat/
+PySFR/
 ├── src/                # 源代码目录
 │   ├── PySFR.py        # 核心 SFR 计算类（原sfrmat5.py）
 │   ├── slantedgeMTF.py # 倾斜边缘 MTF 计算
@@ -58,7 +58,7 @@ py_sfrmat/
 
 ## 项目概述
 
-`py_sfrmat` 是一个用于图像质量评估的 Python 工具，实现了 ISO 12233 标准中定义的空间频率响应（SFR）测量方法。该工具可以分析相机、镜头和其他成像系统的调制传递函数（MTF）。
+`PySFR` 是一个用于图像质量评估的 Python 工具，实现了 ISO 12233 标准中定义的空间频率响应（SFR）测量方法。该工具可以分析相机、镜头和其他成像系统的调制传递函数（MTF）。
 
 ### 主要特性
 
@@ -137,6 +137,13 @@ status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr(
     npol=5,                  # 多项式拟合阶数
     wflag=0                  # 窗口函数选择（0=Tukey, 1=Hamming）
 )
+
+# 处理返回结果
+if status == 0:  # 成功
+    print(f"SFR计算成功 - SFR50: {sfr50}")
+    # 使用 dat, esf, fitme 等结果
+else:
+    print("SFR计算失败")
 ```
 
 ### 3. 测试程序
