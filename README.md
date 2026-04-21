@@ -2,6 +2,8 @@
 
 基于 MATLAB 的 `sfrmat5.m` 移植的 Python 实现，用于计算图像系统的空间频率响应（SFR）。支持命令行和 GUI 两种操作模式。
 
+![PySFR GUI](docs/snapshot-1.png)
+
 ## 项目结构
 
 ```
@@ -59,6 +61,8 @@ PySFR/
 ## 项目概述
 
 `PySFR` 是一个用于图像质量评估的 Python 工具，实现了 ISO 12233 标准中定义的空间频率响应（SFR）测量方法。该工具可以分析相机、镜头和其他成像系统的调制传递函数（MTF）。
+
+![PySFR GUI](docs/snapshot-2.png)
 
 ### 主要特性
 
