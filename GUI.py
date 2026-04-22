@@ -803,7 +803,7 @@ class SFRGUI:
                         plt.xlim(0, None)
                         plt.ylim(0, 1)
                         plt.ylabel("SFR")
-                        plt.title("空间频率响应")
+                        plt.title("空间频率响应(SFR)")
 
                         # 计算并添加奈奎斯特采样频率标识
                         if not is_dpi and sampling_interval > 0:
@@ -1034,7 +1034,7 @@ class SFRGUI:
                         axes[1, 0].set_xlim(0, None)
                         axes[1, 0].set_ylim(0, 1)
                         axes[1, 0].set_ylabel("SFR", fontsize=10)
-                        axes[1, 0].set_title("空间频率响应", fontsize=12)
+                        axes[1, 0].set_title("空间频率响应(SFR)", fontsize=12)
 
                         # 计算并添加奈奎斯特采样频率标识
                         if not is_dpi and sampling_interval > 0:
