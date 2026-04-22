@@ -310,8 +310,9 @@ class SFRGUI:
 
         if file_path:
             try:
-                # 使用cv2加载图像
-                image = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
+                # 使用np.fromfile和cv2.imdecode加载图像，支持中文路径
+                img_array = np.fromfile(file_path, dtype=np.uint8)
+                image = cv2.imdecode(img_array, cv2.IMREAD_UNCHANGED)
                 if image is None:
                     raise ValueError("无法读取图像文件")
 
@@ -466,8 +467,9 @@ class SFRGUI:
         """清除ROI选择"""
         if self.current_image_path and self.roi_coords:
             try:
-                # 重新加载原始图像
-                image = cv2.imread(self.current_image_path, cv2.IMREAD_UNCHANGED)
+                # 重新加载原始图像，支持中文路径
+                img_array = np.fromfile(self.current_image_path, dtype=np.uint8)
+                image = cv2.imdecode(img_array, cv2.IMREAD_UNCHANGED)
                 image = np.array(image, dtype=np.float64)
                 self.calculator.image = image
 
@@ -517,7 +519,7 @@ class SFRGUI:
         about_text = """空间频率响应分析工具
 
 版本信息:
-- 版本: 1.0.0
+- 版本: 1.0.1
 - 基于: MATLAB sfrmat5.m 算法
 - 核心模块: PySFR
 - Python版本: 3.12+
