@@ -4,7 +4,6 @@ GUI界面
 """
 
 import io
-import logging
 import os
 import platform
 
@@ -23,8 +22,6 @@ else:
     plt.rcParams["font.sans-serif"] = ["DejaVu Sans", "Arial"]
 plt.rcParams["axes.unicode_minus"] = False
 
-# 日志配置 - 使用PySFR模块的日志系统
-logger = logging.getLogger(__name__)
 
 
 class ROITool:
