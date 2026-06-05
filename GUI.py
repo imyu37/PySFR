@@ -8,6 +8,13 @@ import os
 import platform
 
 import cv2
+
+# Fix Tcl/Tk library path on Windows — Python installer may put tcl8.6 under tcl\ instead of lib\
+if platform.system() == "Windows":
+    _tcl_path = r"C:\Program Files\Python313\tcl\tcl8.6"
+    if os.path.exists(_tcl_path):
+        os.environ.setdefault("TCL_LIBRARY", _tcl_path)
+
 import FreeSimpleGUI as sg
 import matplotlib.pyplot as plt
 import numpy as np
@@ -378,7 +385,7 @@ class SFRGUI:
                     f"已加载: {os.path.basename(file_path)}, 形状: {image.shape}"
                 )
 
-                self._update_preview(window, display_image)
+                self._update_preview(window, image)
                 window["-STATUSBAR-"].update("图像加载成功")
 
                 return True

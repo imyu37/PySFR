@@ -13,7 +13,6 @@ PySFR/
 │   ├── slantedgeMTF.py # 倾斜边缘 MTF 计算
 │   └── test_sfr_comparison.py # SFR 比较测试程序
 ├── docs/               # 文档目录
-│   ├── 待办事项.md     # 项目开发进度跟踪
 │   └── 算法比较报告.md # 算法比较报告
 ├── images/             # 测试图像目录
 │   ├── ISO 12233-2023 chart.jpg
