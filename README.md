@@ -29,6 +29,17 @@ PySFR/
 
 ## 更新日志
 
+### v1.0.2 (2026.6.5)
+**代码清理与重构**
+
+#### 重构内容
+- 移除 PySFR.py 中所有 Tkinter 依赖（tkinter、filedialog、RectangleSelector）
+- 移除未使用的导入（interp1d、curve_fit），精简依赖
+- 将 `io != 1` 死代码分支替换为明确的错误提示，引导用户使用 GUI.py
+- GUI.py 中提取 `_update_preview()` 方法，消除三处重复图像预览代码（净减 126 行）
+- 移除 GUI.py 中未使用的 logging 导入
+- 更新 README 代码示例中 `io` 参数的说明
+
 ### v1.0.1 (2026.4.22)
 **Bug 修复版本**
 
