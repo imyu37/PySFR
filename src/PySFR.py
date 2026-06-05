@@ -1,14 +1,9 @@
 import logging
-import tkinter as tk
-from tkinter import filedialog
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.widgets import RectangleSelector
 from scipy import fft, signal
-from scipy.interpolate import interp1d
-from scipy.optimize import curve_fit
 
 # 配置matplotlib中文显示
 plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "DejaVu Sans"]
@@ -457,73 +452,9 @@ class SFRCalculator:
         alpha = self.clip(self.defalpha, self.minalpha, self.maxalpha)
         logger.info(f"使用参数 - npol: {npol}, alpha: {alpha}, weight: {weight}")
 
-        if io != 1:  # GUI模式
-            logger.info("进入GUI模式 - 选择图像文件")
-            # 文件选择和ROI选择
-            root = tk.Tk()
-            root.withdraw()
-            file_path = filedialog.askopenfilename()
-
-            if not file_path:
-                logger.error("没有选择文件")
-                return 1, None, None, None, None, None, None, None
-
-            logger.info(f"加载图像文件: {file_path}")
-            a = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
-            if a is None:
-                logger.error("无法读取图像")
-                return 1, None, None, None, None, None, None, None
-
-            # 转换为float64
-            a = np.array(a, dtype=np.float64)
-            logger.info(f"图像加载成功，形状: {a.shape}")
-
-            # 显示图像并选择ROI
-            logger.info("显示图像供用户选择ROI")
-            fig, ax = plt.subplots()
-
-            # 归一化图像数据
-            display_image = a.copy()
-            if display_image.max() > 1:
-                display_image = display_image / 255.0
-
-            ax.imshow(display_image)
-            ax.set_title("Select ROI")
-
-            def onselect(eclick, erelease):
-                nonlocal a
-                x1, y1 = int(eclick.xdata), int(eclick.ydata)
-                x2, y2 = int(erelease.xdata), int(erelease.ydata)
-                x1 = max(0, min(x1, a.shape[1] - 1))
-                x2 = max(0, min(x2, a.shape[1] - 1))
-                y1 = max(0, min(y1, a.shape[0] - 1))
-                y2 = max(0, min(y2, a.shape[0] - 1))
-                a = a[min(y1, y2) : max(y1, y2) + 1, min(x1, x2) : max(x1, x2) + 1]
-                logger.info(f"ROI选择完成: ({x1}, {y1}) 到 ({x2}, {y2})")
-
-            rect_selector = RectangleSelector(
-                ax,
-                onselect,
-                useblit=True,
-                button=[1, 3],
-                minspanx=5,
-                minspany=5,
-                spancoords="pixels",
-                interactive=True,
-            )
-
-            plt.show()
-
-            # 获取采样间隔
-            del_input_raw = float(input("输入采样间隔 (mm 或 dpi): "))
-            logger.info(f"用户输入采样间隔: {del_input_raw}")
-            is_dpi = False
-            if del_input_raw > 1:
-                del_param = 25.4 / del_input_raw  # 将DPI转换为mm
-                is_dpi = True
-                logger.info(f"DPI转换为mm: {del_param}")
-            else:
-                del_param = del_input_raw
+        if io != 1:
+            logger.error("GUI 模式已移除。请使用 python GUI.py 启动图形界面。")
+            return 1, None, None, None, None, None, None, None
         else:  # 非GUI模式
             logger.info("进入非GUI模式")
             a = np.array(a, dtype=np.float64)
