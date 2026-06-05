@@ -291,6 +291,60 @@ class SFRGUI:
 
         return layout
 
+    def _update_preview(self, window, image, roi_coords=None):
+        """更新图像预览"""
+        # 归一化图像数据到[0, 255]范围用于显示
+        display_image = image.copy()
+        if len(display_image.shape) == 3:
+            display_image = (display_image / display_image.max() * 255).astype(
+                np.uint8
+            )
+        else:
+            display_image = (display_image / display_image.max() * 255).astype(
+                np.uint8
+            )
+
+        # 如果有ROI坐标，叠加红色半透明矩形
+        if roi_coords is not None:
+            left, top, right, bottom = roi_coords
+            # 对于单色图像，需要转换为3通道才能显示红色
+            if len(display_image.shape) == 2:
+                display_image = cv2.cvtColor(display_image, cv2.COLOR_GRAY2RGB)
+            # 先绘制红色填充（透明度30%）
+            overlay = display_image.copy()
+            cv2.rectangle(overlay, (left, top), (right, bottom), (255, 0, 0), -1)
+            cv2.addWeighted(overlay, 0.3, display_image, 0.7, 0, display_image)
+            # 再绘制红色边框（线宽1）
+            cv2.rectangle(display_image, (left, top), (right, bottom), (255, 0, 0), 1)
+
+        # 调整大小
+        height, width = display_image.shape[:2]
+        max_size = 400
+        if width > height:
+            new_width = max_size
+            new_height = int(height * max_size / width)
+        else:
+            new_height = max_size
+            new_width = int(width * max_size / height)
+
+        if len(display_image.shape) == 3:
+            img_pil = Image.fromarray(display_image, "RGB")
+        else:
+            img_pil = Image.fromarray(display_image, "L")
+
+        img_resized = img_pil.resize(
+            (new_width, new_height), Image.Resampling.LANCZOS
+        )
+
+        img_byte_arr = io.BytesIO()
+        img_resized.save(img_byte_arr, format="PNG")
+        img_byte_arr = img_byte_arr.getvalue()
+
+        window["-IMAGE_PREVIEW-"].update(data=img_byte_arr)
+
+        if roi_coords is not None:
+            window["-ROI_COORDS-"].update(f"ROI坐标: {roi_coords}")
+
     def load_image(self, window):
         """加载图像文件"""
 
@@ -324,44 +378,7 @@ class SFRGUI:
                     f"已加载: {os.path.basename(file_path)}, 形状: {image.shape}"
                 )
 
-                # 显示图像预览
-                # 归一化图像数据到[0, 255]范围用于显示
-                display_image = image.copy()
-                if len(display_image.shape) == 3:
-                    # RGB图像
-                    display_image = (display_image / display_image.max() * 255).astype(
-                        np.uint8
-                    )
-                else:
-                    # 灰度图像
-                    display_image = (display_image / display_image.max() * 255).astype(
-                        np.uint8
-                    )
-
-                # 调整大小
-                height, width = display_image.shape[:2]
-                max_size = 400
-                if width > height:
-                    new_width = max_size
-                    new_height = int(height * max_size / width)
-                else:
-                    new_height = max_size
-                    new_width = int(width * max_size / height)
-
-                if len(display_image.shape) == 3:
-                    img_pil = Image.fromarray(display_image, "RGB")
-                else:
-                    img_pil = Image.fromarray(display_image, "L")
-
-                img_resized = img_pil.resize(
-                    (new_width, new_height), Image.Resampling.LANCZOS
-                )
-
-                img_byte_arr = io.BytesIO()
-                img_resized.save(img_byte_arr, format="PNG")
-                img_byte_arr = img_byte_arr.getvalue()
-
-                window["-IMAGE_PREVIEW-"].update(data=img_byte_arr)
+                self._update_preview(window, display_image)
                 window["-STATUSBAR-"].update("图像加载成功")
 
                 return True
@@ -389,68 +406,7 @@ class SFRGUI:
                 # 裁剪图像到ROI用于分析
                 cropped_image = crop_to_roi(self.calculator.image, self.roi_coords)
 
-                # 更新预览 - 显示包含ROI方框的整张原始图
-                display_image = original_image.copy()
-                if len(display_image.shape) == 3:
-                    display_image = (display_image / display_image.max() * 255).astype(
-                        np.uint8
-                    )
-                else:
-                    display_image = (display_image / display_image.max() * 255).astype(
-                        np.uint8
-                    )
-
-                # 在图像上绘制ROI方框
-                left, top, right, bottom = self.roi_coords
-
-                # 绘制红色边框和填充（与ROI选择时保持一致）
-                # 对于单色图像，需要转换为3通道才能显示红色
-                if len(display_image.shape) == 2:
-                    # 单色图像转换为3通道
-                    display_image = cv2.cvtColor(display_image, cv2.COLOR_GRAY2RGB)
-
-                # 先绘制红色填充（透明度30%）
-                overlay = display_image.copy()
-                cv2.rectangle(
-                    overlay,
-                    (left, top),
-                    (right, bottom),
-                    (255, 0, 0),
-                    -1,  # -1表示填充
-                )
-                # 应用透明度
-                cv2.addWeighted(overlay, 0.3, display_image, 0.7, 0, display_image)
-
-                # 再绘制红色边框（线宽1）
-                cv2.rectangle(
-                    display_image, (left, top), (right, bottom), (255, 0, 0), 1
-                )
-
-                # 调整大小
-                height, width = display_image.shape[:2]
-                max_size = 400
-                if width > height:
-                    new_width = max_size
-                    new_height = int(height * max_size / width)
-                else:
-                    new_height = max_size
-                    new_width = int(width * max_size / height)
-
-                if len(display_image.shape) == 3:
-                    img_pil = Image.fromarray(display_image, "RGB")
-                else:
-                    img_pil = Image.fromarray(display_image, "L")
-
-                img_resized = img_pil.resize(
-                    (new_width, new_height), Image.Resampling.LANCZOS
-                )
-
-                img_byte_arr = io.BytesIO()
-                img_resized.save(img_byte_arr, format="PNG")
-                img_byte_arr = img_byte_arr.getvalue()
-
-                window["-IMAGE_PREVIEW-"].update(data=img_byte_arr)
-                window["-ROI_COORDS-"].update(f"ROI坐标: {self.roi_coords}")
+                self._update_preview(window, original_image, self.roi_coords)
                 window["-STATUSBAR-"].update("ROI选择成功")
 
                 # 更新分析器中的图像
@@ -470,40 +426,7 @@ class SFRGUI:
                 image = np.array(image, dtype=np.float64)
                 self.calculator.image = image
 
-                # 更新预览
-                display_image = image.copy()
-                if len(display_image.shape) == 3:
-                    display_image = (display_image / display_image.max() * 255).astype(
-                        np.uint8
-                    )
-                else:
-                    display_image = (display_image / display_image.max() * 255).astype(
-                        np.uint8
-                    )
-
-                height, width = display_image.shape[:2]
-                max_size = 400
-                if width > height:
-                    new_width = max_size
-                    new_height = int(height * max_size / width)
-                else:
-                    new_height = max_size
-                    new_width = int(width * max_size / height)
-
-                if len(display_image.shape) == 3:
-                    img_pil = Image.fromarray(display_image, "RGB")
-                else:
-                    img_pil = Image.fromarray(display_image, "L")
-
-                img_resized = img_pil.resize(
-                    (new_width, new_height), Image.Resampling.LANCZOS
-                )
-
-                img_byte_arr = io.BytesIO()
-                img_resized.save(img_byte_arr, format="PNG")
-                img_byte_arr = img_byte_arr.getvalue()
-
-                window["-IMAGE_PREVIEW-"].update(data=img_byte_arr)
+                self._update_preview(window, image)
                 window["-ROI_COORDS-"].update("ROI坐标: 无")
                 self.roi_coords = None
                 window["-STATUSBAR-"].update("ROI已清除")
