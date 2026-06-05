@@ -139,12 +139,7 @@ class SFRGUI:
             [
                 sg.Menu(
                     [
-                        [
-                            "帮助",
-                            [
-                                "关于",
-                            ],
-                        ],
+                        ["关于"],
                     ],
                     key="-MENU-",
                 )
@@ -404,9 +399,10 @@ class SFRGUI:
 
         try:
             roi_tool = ROITool(self.calculator.image)
-            self.roi_coords = roi_tool.select_roi()
+            new_coords = roi_tool.select_roi()
 
-            if self.roi_coords:
+            if new_coords:
+                self.roi_coords = new_coords
                 # 保存原始图像用于预览
                 original_image = self.calculator.image.copy()
 
