@@ -142,7 +142,7 @@ sfr = SFRCalculator()
 # 非 GUI 模式（直接传入数据）
 image_data = np.array(...)  # 你的图像数据
 status, dat, e, sfr50, fitme, esf, nbin, del2, is_dpi = sfr.calculate_sfr(
-    io=1,                    # 非 GUI 模式
+    io=1,                    # io=1: 非 GUI 模式（io=0 已弃用，返回错误）
     del_input=0.01,          # 采样间隔（mm）
     a=image_data,            # 图像数据
     npol=5,                  # 多项式拟合阶数
