@@ -1,0 +1,28 @@
+第三方代码声明 / Third-Party Code Notice
+==========================================
+
+本目录包含 Peter Burns 的原始 MATLAB sfrmat5 代码，仅供算法参考使用。
+
+This directory contains the original MATLAB sfrmat5 code by Peter Burns,
+included solely for algorithmic reference.
+
+原始代码版权信息 / Original Code Copyright:
+  Copyright (c) 2009-2023 Peter D. Burns, pdburns@ieee.org
+  All rights reserved.
+
+说明 / Notes:
+  1. 这些 .m 文件属于 Peter D. Burns，保留所有权利。
+     These .m files are the property of Peter D. Burns. All rights reserved.
+
+  2. 这些文件未包含在 PySFR 项目的 MIT 许可证范围内。
+     These files are NOT covered by the PySFR project's MIT License.
+
+  3. PySFR (src/PySFR.py) 是基于已发表的 ISO 12233 倾斜边缘 SFR 算法
+     的独立 Python 实现，并非 MATLAB 代码的逐行翻译。
+     PySFR is an independent Python implementation of the published
+     slanted-edge SFR algorithm as described in ISO 12233, not a
+     line-by-line translation of the MATLAB code.
+
+  4. 如需使用或分发这些 MATLAB 文件，请联系 Peter Burns:
+     For permission to use or distribute these MATLAB files, contact:
+     Peter Burns, pdburns@ieee.org

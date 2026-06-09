@@ -1,3 +1,14 @@
+# PySFR - Python implementation of the slanted-edge SFR (MTF) measurement algorithm
+#
+# Copyright (c) 2024 imyu37 / wanyong_37@hotmail.com
+# Licensed under the MIT License. See LICENSE file in the project root.
+#
+# Original MATLAB algorithm by Peter D. Burns (pdburns@ieee.org)
+#   Copyright (c) 2009-2023 Peter D. Burns. All rights reserved.
+#   Based on sfrmat5.m, distributed in support of ISO 12233 Edition 4.
+#
+# This Python port is an independent implementation of the published algorithm.
+
 import logging
 
 import cv2
@@ -41,6 +52,7 @@ class SFRCalculator:
         self.defalpha = 0.5  # Tukey窗参数
         self.maxalpha = 1.0
         self.minalpha = 0.1
+        self.image = None  # 由 GUI 层设置，用于 ROI 选择等操作
         logger.info(
             f"SFR计算器初始化完成: 权重={self.guidefweight}, 多项式阶数={self.defnpol}, 合并因子={self.nbin}"
         )

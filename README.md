@@ -1,3 +1,5 @@
+**简体中文** | [English](README.en.md)
+
 # PySFR - Python 空间频率响应分析工具
 
 基于 MATLAB 的 `sfrmat5.m` 移植的 Python 实现，用于计算图像系统的空间频率响应（SFR）。支持命令行和 GUI 两种操作模式。
@@ -13,17 +15,20 @@ PySFR/
 │   ├── slantedgeMTF.py # 倾斜边缘 MTF 计算
 │   └── test_sfr_comparison.py # SFR 比较测试程序
 ├── docs/               # 文档目录
-│   └── 算法比较报告.md # 算法比较报告
+│   ├── 算法比较报告.md # 算法比较报告
+│   └── draft-email-to-peter-burns.md # 致 Peter Burns 邮件草稿
 ├── images/             # 测试图像目录
-│   ├── ISO 12233-2023 chart.jpg
 │   ├── Plan N 10x-1.bmp
 │   ├── Test_edge1.tif
 │   └── Test_edge1_mono.tif
 ├── data/               # 数据输出目录
 │   ├── Plan N 10x-1.xlsx
 │   └── Test_edge1.xlsx
+├── ref/                # 原始 MATLAB sfrmat5.m 参考源码
 ├── GUI.py              # FreeSimpleGUI 界面（主程序）
-└── README.md          # 项目文档
+├── README.md           # 项目文档（中文）
+├── README.en.md        # 项目文档（英文）
+└── LICENSE             # MIT 许可证
 ```
 
 ## 更新日志
@@ -51,7 +56,6 @@ PySFR/
 
 #### 核心功能
 - 基于 MATLAB sfrmat5.m 算法的完整 Python 移植
-- 实现 ISO 12233 标准的空间频率响应（SFR）测量
 - 支持 RGB 和亮度通道的独立分析
 - 4 倍超采样技术提高测量精度
 - 窗口函数选择（Tukey 窗、汉明窗）
@@ -77,7 +81,6 @@ PySFR/
 
 ## 项目概述
 
-`PySFR` 是一个用于图像质量评估的 Python 工具，实现了 ISO 12233 标准中定义的空间频率响应（SFR）测量方法。该工具可以分析相机、镜头和其他成像系统的调制传递函数（MTF）。
 
 ![PySFR GUI](docs/snapshot-2.png)
 
@@ -219,7 +222,6 @@ python src/test_sfr_comparison.py
 
 项目包含几个测试图像：
 
-- `images/ISO 12233-2023 chart.jpg`: ISO 标准测试图
 - `images/Plan N 10x-1.bmp`: 平面测试图像
 - `images/Test_edge1.tif`: 边缘测试图像
 - `images/Test_edge1_mono.tif`: 单通道边缘测试图像
@@ -300,7 +302,6 @@ minalpha = 0.5
 - 作者: Peter Burns, pdburns@ieee.org
 - 基于 sfrmat4，适配多项式边缘拟合
 - 最后更新: 2023年2月27日
-- 支持 ISO 12233 第4版
 
 ## 作者和贡献
 
@@ -310,6 +311,5 @@ minalpha = 0.5
 
 ## 参考文献
 
-1. ISO 12233:2023 - Photography - Electronic still picture imaging - Resolution and spatial frequency responses
 2. Burns, P.D., "Slanted-Edge MTF for Digital Camera and Scanner Analysis", IS&T's 2000 PICS Conference
 3. sfrmat5.m MATLAB 实现文档

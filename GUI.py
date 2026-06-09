@@ -1,6 +1,13 @@
 """
-GUI界面
-基于MATLAB sfrmat5.m的Python实现 - PySFR模块
+GUI界面 - PySFR Desktop Application
+
+基于 MATLAB sfrmat5.m 的 Python 实现 - PySFR 模块
+
+Copyright (c) 2024 imyu37 / wanyong_37@hotmail.com
+Licensed under the MIT License. See LICENSE file in the project root.
+
+原始 MATLAB 算法: Peter D. Burns (pdburns@ieee.org)
+  Copyright (c) 2009-2023 Peter D. Burns. All rights reserved.
 """
 
 import io
@@ -139,7 +146,7 @@ class SFRGUI:
             [
                 sg.Menu(
                     [
-                        ["关于"],
+                        ["关于", ["关于..."]],
                     ],
                     key="-MENU-",
                 )
@@ -442,7 +449,7 @@ class SFRGUI:
         about_text = """空间频率响应分析工具
 
 版本信息:
-- 版本: 1.0.1
+- 版本: 1.0.2
 - 基于: MATLAB sfrmat5.m 算法
 - 核心模块: PySFR
 - Python版本: 3.12+
@@ -1053,7 +1060,7 @@ class SFRGUI:
                 except Exception as e:
                     self.sg.popup_error(f"无法显示多图: {str(e)}")
 
-            elif event == "关于":
+            elif event == "关于...":
                 # 显示关于对话框
                 self.show_about_dialog()
 
