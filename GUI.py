@@ -84,8 +84,8 @@ class ROITool:
             ax.add_patch(roi_rect)
             fig.canvas.draw()
 
-        # 创建矩形选择器
-        rect_selector = RectangleSelector(
+        # 创建矩形选择器（保持在实例上以防止 GC 回收）
+        self._rect_selector = RectangleSelector(
             ax,
             onselect,
             useblit=True,

@@ -12,8 +12,7 @@ PySFR/
 │   ├── slantedgeMTF.py     # 倾斜边缘 MTF 计算 (备选实现)
 │   └── test_sfr_comparison.py  # 算法对比测试
 ├── docs/
-│   ├── 算法比较报告.md     # Python vs MATLAB 算法逐项对比
-│   └── draft-email-to-peter-burns.md  # 致 Peter Burns 邮件草稿
+│   └── 算法比较报告.md     # Python vs MATLAB 算法逐项对比
 ├── images/                 # 测试用标准图像
 ├── data/                   # Excel 输出目录
 ├── ref/                    # 原始 MATLAB sfrmat5.m 参考源码

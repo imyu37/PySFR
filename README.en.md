@@ -15,8 +15,7 @@ PySFR/
 │   ├── slantedgeMTF.py # Slanted-edge MTF computation
 │   └── test_sfr_comparison.py # SFR comparison test
 ├── docs/               # Documentation
-│   ├── 算法比较报告.md # Algorithm comparison report (Chinese)
-│   └── draft-email-to-peter-burns.md # Draft email to Peter Burns
+│   └── 算法比较报告.md # Algorithm comparison report (Chinese)
 ├── images/             # Test images
 │   ├── Plan N 10x-1.bmp
 │   ├── Test_edge1.tif

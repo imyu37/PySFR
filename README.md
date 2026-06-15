@@ -15,8 +15,7 @@ PySFR/
 │   ├── slantedgeMTF.py # 倾斜边缘 MTF 计算
 │   └── test_sfr_comparison.py # SFR 比较测试程序
 ├── docs/               # 文档目录
-│   ├── 算法比较报告.md # 算法比较报告
-│   └── draft-email-to-peter-burns.md # 致 Peter Burns 邮件草稿
+│   └── 算法比较报告.md # 算法比较报告
 ├── images/             # 测试图像目录
 │   ├── Plan N 10x-1.bmp
 │   ├── Test_edge1.tif
