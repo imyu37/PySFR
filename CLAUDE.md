@@ -67,3 +67,4 @@ python -c "from src.PySFR import SFRCalculator; c=SFRCalculator(); print('OK')"
 - **Windows Tcl/Tk 路径**：GUI.py 在启动时硬编码 `C:\Program Files\Python313\tcl\tcl8.6` 设置 `TCL_LIBRARY`。如果 Python 版本不同需调整。
 - **matplotlib 中文**：代码硬编码中文字体列表，跨平台时需确认字体存在。
 - **日志文件**：运行后生成 `PySFR.log`（已在 `.gitignore` 中排除）。
+- **Windows git index.lock 僵尸**：VSCode 的 `git commit --file -` 在 Windows 上可能留下无法自动清理的 `.git/index.lock`，导致所有 git 写操作失败。运行全局工具 `fix-git-lock` 一键修复（详见 `d:/YONG/2.Python/fix-git-lock`）。
